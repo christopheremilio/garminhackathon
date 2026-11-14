@@ -1,0 +1,6 @@
+<strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
+    <string id="AppName">HelloFenix</string>
+    <string id="StepsLabel">Steps today</string>
+    <string id="ToGo">to go</string>
+    <string id="GoalReached">Goal reached!</string>
+</strings>
