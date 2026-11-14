@@ -1,0 +1,2 @@
+# Used only by `make autopilot` (after monkey.jungle): keep the autopilot on.
+base.excludeAnnotations = noautopilot

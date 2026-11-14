@@ -15,28 +15,24 @@ import Toybox.WatchUi;
 // day (Demo.dayFrac), so it works at any hour. Rewards are faked too.
 module DemoTour {
 
-    const CARD_MS = 2000;    // title card
-    const SHOW_MS = 3600;    // the app after the step is applied
+    const CARD_MS = 1300;    // title card
+    const SHOW_MS = 2400;    // the app after the step is applied
 
-    // [time, headline, pitch] per beat: hook -> a day of ups and downs ->
-    // rewards that bring you back -> call to action. About 65 s per loop.
-    // Keep lines short for the round screen.
+    // The 30-second cut: hook -> effortless -> the memorable moment ->
+    // stakes -> relief -> smart -> reward -> sign-off. 8 beats x 3.7 s.
+    // [time, headline, pitch]. Keep lines short for the round screen.
     const STEPS = [
-        ["",      "Forget to drink?", "%N won't\nlet you."],
-        ["7:30",  "Rise and sip",     "One press.\nHappy hamster."],
-        ["12:00", "Busy morning",     "Fall behind and\n%N gets thirsty"],
-        ["13:00", "Drink now!",       "%N stomps.\nYour wrist buzzes."],
-        ["16:00", "%N fainted",       "Dramatic? Yes.\nGone? Never."],
-        ["16:05", "One sip later",    "...%N is back!"],
-        ["17:45", "Gym mode",         "Knows where you are\nand how hard you work"],
-        ["20:00", "Goal reached!",    "Party time.\nNew hat unlocked."],
-        ["",      "Dress %N up",      "A new outfit\nevery 3 goal days"],
-        ["",      "Earn badges",      "Streaks and totals\nfill the shelf"],
-        ["",      "Your week",        "Every day\nat a glance"],
-        ["",      "Keep %N happy.",   "Stay hydrated."]
+        ["",             "Forget to drink?",  "%N won't\nlet you."],
+        ["7:30",         "One press",         "A glass logged.\nA happy hamster."],
+        ["13:00",        "Drink now!",        "%N stomps.\nYour wrist buzzes."],
+        ["4 days later", "%N walked out",     "Skip water too long\nand %N leaves."],
+        ["Day 5",        "One sip later",     "...%N comes home."],
+        ["17:45",        "It reads your day", "Heat, workouts,\nsteps: %N adapts."],
+        ["20:00",        "Goal reached!",     "Outfits\nto unlock."],
+        ["",             "Keep %N happy.",    "Stay hydrated."]
     ];
     const STEP_INTRO = 0;
-    const STEP_OUTRO = 11;
+    const STEP_OUTRO = 7;
 
     var player as DemoPlayer? = null;
 
@@ -90,8 +86,9 @@ module DemoTour {
                             1.0, false, System.getTimer(), HamsterArt.REACT_NONE, 0);
         } else if (text[0].length() > 0) {
             // time-of-day pill
+            var w = dc.getTextWidthInPixels(text[0], Graphics.FONT_XTINY) + 24;
             dc.setColor(Scenes.DBLUE, Graphics.COLOR_TRANSPARENT);
-            dc.fillRoundedRectangle(96, 58, 68, 26, 13);
+            dc.fillRoundedRectangle(130 - w / 2, 58, w, 26, 13);
             Scenes.txt(dc, 130, 71, Graphics.FONT_XTINY, text[0], Scenes.WHITE);
         }
         Scenes.fitTxt(dc, 130, 118, [Graphics.FONT_MEDIUM, Graphics.FONT_SMALL, Graphics.FONT_TINY]
@@ -173,54 +170,34 @@ class DemoPlayer {
                 Screen.page = Screen.PAGE_HOME;
                 WaterLog.resetAll();
                 break;
-            case 1: // 7:30 Rise and sip
+            case 1: // 7:30 One press
                 Actions.logWater(Units.defaultAddMl());
                 break;
-            case 2: // 12:00 Busy morning -> thirsty
-                Demo.dayFrac = 0.35;
-                break;
-            case 3: // 13:00 Drink now! Red room + angry stomp + buzzes
+            case 2: // 13:00 Drink now! Red room + angry stomp + bell + buzzes
                 Demo.dayFrac = 0.6;
                 Screen.reaction = HamsterArt.REACT_ANGRY;
                 DrinkAlert.angry();
                 break;
-            case 4: // 16:00 Fainted (collapsed)
-                Demo.dayFrac = 0.9;
+            case 3: // 4 days later: Coco walks out (the view plays the walk-off)
+                Demo.away = true;
                 break;
-            case 5: // 16:05 One sip later... back! (then on track again)
+            case 4: // Day 5: one sip and Coco walks back in
                 Demo.dayFrac = 0.2;
                 Actions.logWater(Units.defaultAddMl());
-                Screen.reaction = HamsterArt.REACT_REVIVE;
                 break;
-            case 6: // 17:45 Gym mode: arrival banner + heart rate -> wheel
-                Demo.place = Places.GYM;
+            case 5: // 17:45 It reads your day: hot day + workout (wheel) + steps
+                Demo.tempC = 31;
                 Demo.exerting = true;
-                Screen.banner(Lang.format(WatchUi.loadResource(Rez.Strings.ArriveBanner) as String,
-                                          [Units.amount(Hydration.GYM_DRINK_ML)]), 3600);
-                DrinkAlert.play();
+                Screen.banner(Lang.format(WatchUi.loadResource(Rez.Strings.HeatLine) as String,
+                                          [31, Units.amount(Hydration.heatBonusMl())]), 2400);
                 break;
-            case 7: // 20:00 Goal reached! (rewards aren't really counted)
+            case 6: // 20:00 Goal reached! (rewards aren't really counted)
                 Demo.exerting = false;
-                Demo.place = null;
                 Actions.logWater(Hydration.goalMl() - WaterLog.getMl());
                 Screen.newItem = HamsterArt.ACC_PARTY_HAT;
                 break;
-            case 8: // Dress up
-                Demo.hat = HamsterArt.ACC_CROWN;
-                Demo.other = HamsterArt.ACC_GLASSES;
-                Screen.page = Screen.PAGE_CLOSET;
-                break;
-            case 9: // Earn badges
-                Demo.badges = (1 << Rewards.BADGE_FIRST) | (1 << Rewards.BADGE_STREAK3)
-                              | (1 << Rewards.BADGE_STREAK7) | (1 << Rewards.BADGE_TOTAL10);
-                Screen.page = Screen.PAGE_BADGES;
-                break;
-            case 10: // Your week
-                Screen.page = Screen.PAGE_WEEK;
-                break;
-            default: // Keep <name> happy: home, hydrated, sparkling, wearing its new hat
+            default: // Keep <name> happy: home, hydrated, in its new hat
                 Demo.hat = HamsterArt.ACC_PARTY_HAT;
-                Demo.other = null;
                 Screen.page = Screen.PAGE_HOME;
                 break;
         }

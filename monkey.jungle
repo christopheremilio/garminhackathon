@@ -1,3 +1,7 @@
 project.manifest = manifest.xml
 base.sourcePath = source
 base.resourcePath = resources
+
+# The autopilot (scripted UI test) is only in `make autopilot` builds; see
+# autopilot.jungle and source/Autopilot.mc.
+base.excludeAnnotations = autopilot

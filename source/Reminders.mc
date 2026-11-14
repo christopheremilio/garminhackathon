@@ -12,18 +12,27 @@ module Reminders {
         return Lang.format(Application.loadResource(id) as String, args);
     }
 
-    // "<name> is thirsty" etc.
-    function moodTitle(mood as Number) as String {
+    // "<name> is thirsty" etc. `habit` is the habit Coco needs most
+    // (Pet.HABIT_*): steps only ever reach the "wants a walk" level.
+    function moodTitle(mood as Number, habit as Number) as String {
         var n = Prefs.name();
+        if (mood == Pet.MOOD_THIRSTY && habit == Pet.HABIT_STEPS) { return fmt(Rez.Strings.TitleWalk, [n]); }
         if (mood == Pet.MOOD_THIRSTY) { return fmt(Rez.Strings.TitleThirsty, [n]); }
         if (mood == Pet.MOOD_LAST_WARNING) { return fmt(Rez.Strings.TitleCrying, [n]); }
         if (mood == Pet.MOOD_COLLAPSED) { return fmt(Rez.Strings.TitleCollapsed, [n]); }
+        if (mood == Pet.MOOD_AWAY) { return fmt(Rez.Strings.TitleLeft, [n]); }
         return fmt(Rez.Strings.TitleWantsDrink, [n]);
     }
 
-    function moodBody(mood as Number) as String {
+    function moodBody(mood as Number, habit as Number) as String {
+        if (mood == Pet.MOOD_THIRSTY && habit == Pet.HABIT_STEPS) {
+            return Application.loadResource(Rez.Strings.WalkBody) as String;
+        }
         if (mood == Pet.MOOD_COLLAPSED) {
             return Application.loadResource(Rez.Strings.DrinkToRevive) as String;
+        }
+        if (mood == Pet.MOOD_AWAY) {
+            return fmt(Rez.Strings.BringBack, [Prefs.name()]);
         }
         return Application.loadResource(Rez.Strings.DrinkNowShort) as String;
     }
@@ -35,7 +44,8 @@ module Reminders {
         var v = Storage.getValue(KEY_REMIND_MOOD);
         var last = v instanceof Number ? v : null;
         Storage.setValue(KEY_REMIND_MOOD, mood);
-        var bad = mood == Pet.MOOD_THIRSTY || mood == Pet.MOOD_LAST_WARNING || mood == Pet.MOOD_COLLAPSED;
+        var bad = mood == Pet.MOOD_THIRSTY || mood == Pet.MOOD_LAST_WARNING || mood == Pet.MOOD_COLLAPSED
+                  || mood == Pet.MOOD_AWAY;
         return bad && (last == null || Pet.isWorse(mood, last));
     }
 }

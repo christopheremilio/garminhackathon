@@ -87,6 +87,9 @@ module WaterLog {
 
     // Log a drink of `ml`, drunk at `atSec` (defaults to now).
     function add(ml as Number, atSec as Number?) as Void {
+        if (Pet.isAway()) {
+            Pet.comeBack();
+        }
         var list = entries();
         list.add(ml);
         setToday(getMl() + ml, list);

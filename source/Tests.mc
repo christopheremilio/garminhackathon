@@ -209,6 +209,84 @@ function testForegroundFlag(logger as Logger) as Boolean {
 }
 
 (:test)
+function testStepsHabit(logger as Logger) as Boolean {
+    tReset();
+    Demo.active = true;
+    Demo.dayFrac = 0.5;
+    var g = Steps.goal();
+    Demo.steps = g / 2;
+    var ok = tCheck(logger, "on pace -> 100", Steps.petScore() == 100);
+    Demo.steps = g * 4 / 10;
+    ok = tCheck(logger, "10% behind -> 90", Steps.petScore() == 90) && ok;
+    Demo.steps = 0;
+    ok = tCheck(logger, "far behind floors at 50", Steps.petScore() == Steps.MIN_SCORE) && ok;
+    ok = tCheck(logger, "steps alone never worse than restless",
+                Pet.moodFor([100, Steps.petScore()], false, false) == Pet.MOOD_THIRSTY) && ok;
+    ok = tCheck(logger, "worst habit = steps", Pet.worstHabit([95, 50]) == Pet.HABIT_STEPS) && ok;
+    ok = tCheck(logger, "ties go to water", Pet.worstHabit([60, 60]) == Pet.HABIT_WATER) && ok;
+    Demo.steps = g;
+    ok = tCheck(logger, "goal met -> 100", Steps.petScore() == 100) && ok;
+    ok = tCheck(logger, "commas", Steps.withCommas(6214).equals("6,214") && Steps.withCommas(10005).equals("10,005")) && ok;
+    tReset();
+    return ok;
+}
+
+(:test)
+function testHeatBonus(logger as Logger) as Boolean {
+    tReset();
+    Demo.active = true;
+    Demo.tempC = 20;
+    var base = Hydration.goalMl();
+    var ok = tCheck(logger, "20C -> no bonus", Hydration.heatBonusMl() == 0);
+    Demo.tempC = 27;
+    ok = tCheck(logger, "27C -> +1 glass", Hydration.heatBonusMl() == 250) && ok;
+    ok = tCheck(logger, "goal grows by a glass", Hydration.goalMl() == base + 250) && ok;
+    Demo.tempC = 33;
+    ok = tCheck(logger, "33C -> +2 glasses", Hydration.heatBonusMl() == 500) && ok;
+    tReset();
+    return ok;
+}
+
+(:test)
+function testWorkoutWindow(logger as Logger) as Boolean {
+    tReset();
+    var ok = tCheck(logger, "no workout yet", !Hydration.justWorkedOut());
+    Hydration.markWorkoutEnded();
+    ok = tCheck(logger, "just worked out", Hydration.justWorkedOut()) && ok;
+    ok = tCheck(logger, "suggests 2 glasses", Hydration.suggestedDrinkMl(false, null) == 500) && ok;
+    Storage.setValue(Hydration.KEY_WORKOUT_END, WaterLog.nowSec() - 2 * 3600);
+    ok = tCheck(logger, "window over after an hour", !Hydration.justWorkedOut()) && ok;
+    return ok;
+}
+
+(:test)
+function testCocoWalksOff(logger as Logger) as Boolean {
+    tReset();
+    Storage.setValue(Pet.KEY_FIRST_DAY, WaterLog.daysAgo(20));
+    for (var i = 1; i <= 3; i++) {
+        tSetDay(i, 500, 2000);                 // 3 missed days
+    }
+    tSetDay(4, 2000, 2000);                    // met before that
+    var ok = tCheck(logger, "3 missed days: still here", !Pet.isAway() && Pet.missedRun() == 3);
+    tSetDay(4, 500, 2000);                     // now 4 missed in a row
+    ok = tCheck(logger, "4 missed days: walked off", Pet.isAway()) && ok;
+    ok = tCheck(logger, "mood is away", Pet.currentMood() == Pet.MOOD_AWAY) && ok;
+    WaterLog.add(250, null);
+    ok = tCheck(logger, "a drink brings Coco back", !Pet.isAway() && Pet.missedRun() == 0) && ok;
+    tReset();
+    Storage.setValue(Pet.KEY_FIRST_DAY, WaterLog.daysAgo(2));
+    for (var i = 1; i <= 6; i++) {
+        tSetDay(i, 0, 2000);
+    }
+    ok = tCheck(logger, "days before first use don't count", Pet.missedRun() == 2 && !Pet.isAway()) && ok;
+    tReset();
+    Demo.active = true;
+    ok = tCheck(logger, "demo controls away", !Pet.isAway()) && ok;
+    tReset();
+    return ok;
+}
+
+(:test)
 function testMoodDropReminder(logger as Logger) as Boolean {
     tReset();
     var ok = tCheck(logger, "first thirsty -> remind", Reminders.moodDropped(Pet.MOOD_THIRSTY));

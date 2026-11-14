@@ -8,12 +8,15 @@ module Actions {
     // Log a drink today: revive if it had collapsed, party if this drink
     // reaches the goal, otherwise sip.
     function logWater(ml as Number) as Void {
+        var wasAway = Pet.isAway();
         var wasCollapsed = Pet.currentMood() == Pet.MOOD_COLLAPSED;
         var wasMet = WaterLog.goalReached();
         WaterLog.add(ml, null);
         Screen.newItem = Rewards.checkDay(WaterLog.today());
         Screen.reactAmount = ml;
-        if (wasCollapsed) {
+        if (wasAway) {
+            Screen.react(HamsterArt.REACT_WALK_IN);     // WaterLog.add brought Coco back
+        } else if (wasCollapsed) {
             Screen.react(HamsterArt.REACT_REVIVE);
         } else if (!wasMet && WaterLog.goalReached()) {
             Screen.react(HamsterArt.REACT_GOAL);

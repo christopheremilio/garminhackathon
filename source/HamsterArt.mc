@@ -20,8 +20,13 @@ module HamsterArt {
         REACT_TILT,    // undo: confused wobble
         REACT_REVIVE,  // first drink after collapsing: "<name> is back!"
         REACT_GOAL,    // just reached today's goal: party
-        REACT_ANGRY    // drink now!: jumping up and down in anger
+        REACT_ANGRY,   // drink now!: jumping up and down in anger
+        REACT_WALK_OFF,  // missed too many days: walks off the screen
+        REACT_WALK_IN    // first drink while away: walks back in
     }
+
+    const WALK_OFF_MS = 3000;
+    const WALK_IN_MS = 2500;
 
     const FACE_ANGRY = 100;       // face used during REACT_ANGRY
     const ANGRY_JUMP_MS = 500;    // one angry jump (DrinkAlert buzzes on each landing)
@@ -82,6 +87,8 @@ module HamsterArt {
         if (reaction == REACT_REVIVE) { return REVIVE_MS; }
         if (reaction == REACT_GOAL) { return GOAL_MS; }
         if (reaction == REACT_ANGRY) { return ANGRY_MS; }
+        if (reaction == REACT_WALK_OFF) { return WALK_OFF_MS; }
+        if (reaction == REACT_WALK_IN) { return WALK_IN_MS; }
         return 0;
     }
 
@@ -200,6 +207,12 @@ module HamsterArt {
             face = Pet.MOOD_HYDRATED;   // happy while reacting
         } else if (reaction == REACT_ANGRY) {
             face = FACE_ANGRY;
+        } else if (reaction == REACT_WALK_OFF) {
+            face = Pet.MOOD_THIRSTY;    // worried, sweat drop
+        } else if (reaction == REACT_WALK_IN) {
+            face = Pet.MOOD_HYDRATED;
+        } else if (face == Pet.MOOD_AWAY) {
+            face = Pet.MOOD_ON_TRACK;   // (not normally drawn while away)
         }
         var collapsed = face == Pet.MOOD_COLLAPSED;
 
@@ -218,6 +231,8 @@ module HamsterArt {
                 dy += hopAt(rt % 700);
             } else if (reaction == REACT_TILT) {
                 dx = wave(rt, TILT_MS / 2, 4.0);
+            } else if (reaction == REACT_WALK_OFF || reaction == REACT_WALK_IN) {
+                dy = -((rt / 150) % 2) * 3;                        // walking bob
             } else if (reaction == REACT_ANGRY) {
                 // stomping jumps, landing every ANGRY_JUMP_MS, with a shake
                 var q = rt % ANGRY_JUMP_MS;
@@ -247,6 +262,8 @@ module HamsterArt {
         var step = running ? (((t / 125) % 2) == 0 ? 4 : -4) : 0;
         if (reaction == REACT_ANGRY) {
             step = ((rt / ANGRY_JUMP_MS) % 2) == 0 ? 3 : -3;   // stomp
+        } else if (reaction == REACT_WALK_OFF || reaction == REACT_WALK_IN) {
+            step = ((rt / 150) % 2) == 0 ? 5 : -5;             // walking
         }
 
         // Ears

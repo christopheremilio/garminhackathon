@@ -143,4 +143,18 @@
     <string id="NameStepTitle">1 of 3: Name</string>
     <string id="TypeMyOwn">Type my own...</string>
     <string id="CurrentName">Current</string>
+
+    <!-- Steps habit, hot day, post-workout -->
+    <string id="StepsLine">$1$ / $2$ steps</string>
+    <string id="StepsToGo">$1$ steps to go</string>
+    <string id="HeatLine">Hot day ($1$C): +$2$</string>
+    <string id="PostWorkout">Post-workout: drink $1$</string>
+    <string id="TitleWalk" scope="background">$1$ wants a walk</string>
+    <string id="WalkBody" scope="background">Time to stretch your legs</string>
+    <string id="WorkoutTitle" scope="background">Great workout!</string>
+    <string id="WorkoutBody" scope="background">Drink $1$ to recover.</string>
+
+    <!-- Coco walks off after a lapsed streak -->
+    <string id="TitleLeft" scope="background">$1$ left</string>
+    <string id="BringBack" scope="background">Drink to bring $1$ back</string>
 </strings>

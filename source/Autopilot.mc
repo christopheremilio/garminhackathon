@@ -13,11 +13,19 @@ import Toybox.WatchUi;
 // It skips only the watch's own step of turning a physical press / swipe into
 // that call, and it can't judge looks, animation or vibration.
 //
-// Turn on with Autopilot.ENABLED (runs once when the app opens, instead of
-// the demo). It starts from empty storage, so it wipes the app's data.
+// Only in the autopilot build: `make autopilot` compiles with
+// autopilot.jungle, which keeps the (:autopilot) version of isOn() below.
+// Normal builds (`make build/run/demo`) keep the (:noautopilot) one, so the
+// autopilot can never take over the demo. It starts from empty storage, so
+// it wipes the app's data.
 module Autopilot {
 
-    const ENABLED = false;
+    (:autopilot)
+    function isOn() as Boolean { return true; }
+
+    (:noautopilot)
+    function isOn() as Boolean { return false; }
+
     const STEP_MS = 1300;
 
     const STEPS = [
@@ -64,7 +72,9 @@ module Autopilot {
         "Hamster opens the hamster submenu",
         "Rename shows the name list",
         "picking Peanut renames, back to the hamster menu",
-        "Back to hamster from the hamster menu"
+        "Back to hamster from the hamster menu",
+        "4 missed days: Coco walks off",
+        "START: Coco walks back in"
     ];
 
     var active as Boolean = false;
@@ -302,6 +312,18 @@ class AutopilotPlayer {
             case 41: pick(:rename); break;
             case 42: pick(2); break;                     // "Peanut"
             case 43: pick(:home); break;
+            case 44: {
+                Storage.setValue(Pet.KEY_FIRST_DAY, WaterLog.daysAgo(20));
+                Storage.deleteValue(Pet.KEY_RETURNED_DAY);
+                var h = WaterLog.history();
+                for (var day = 1; day <= 4; day++) {
+                    h[WaterLog.daysAgo(day)] = [0, 2000] as Array<Storage.ValueType>;
+                }
+                Storage.setValue(WaterLog.KEY_HISTORY, h);
+                Screen.changed();
+                break;
+            }
+            case 45: main().onSelect(); break;
         }
     }
 
@@ -368,6 +390,11 @@ class AutopilotPlayer {
             case 42: return want(Prefs.name().equals("Peanut"), "name is " + Prefs.name())
                           && want(d instanceof HamsterMenuDelegate, "not back on the hamster menu");
             case 43: return want(onHamster(), "not back on hamster");
+            case 44: return want(Pet.isAway(), "not away")
+                          && want(Pet.currentMood() == Pet.MOOD_AWAY, "mood not away")
+                          && want(onHamster(), "not on hamster screen");
+            case 45: return want(!Pet.isAway(), "still away")
+                          && want(onHamster(), "not on hamster screen");
         }
         return false;
     }

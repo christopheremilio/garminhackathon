@@ -1,3 +1,4 @@
+import Toybox.Application;
 import Toybox.Lang;
 
 // The hamster's state. Habit-agnostic: every habit reports a wellbeing score
@@ -15,7 +16,70 @@ module Pet {
         MOOD_ON_TRACK,
         MOOD_THIRSTY,
         MOOD_LAST_WARNING,  // crying, toy water pistol, red room
-        MOOD_COLLAPSED      // lying down, grey room
+        MOOD_COLLAPSED,     // lying down, grey room
+        MOOD_AWAY           // walked off after too many missed days
+    }
+
+    // Coco walks off after MORE than this many missed days in a row.
+    const AWAY_AFTER_MISSED_DAYS = 3;
+    const KEY_FIRST_DAY = "firstDay";       // first day using the app
+    const KEY_RETURNED_DAY = "returnedDay"; // day Coco last came back
+
+    // Days in a row the water goal was missed, counting back from
+    // yesterday. Stops at a met day, the day Coco last came back, or the
+    // first day using the app.
+    function missedRun() as Number {
+        var first = firstDay();
+        var v = Storage.getValue(KEY_RETURNED_DAY);
+        var returned = v instanceof Number ? v : 0;
+        var n = 0;
+        for (var i = 1; i <= WaterLog.HISTORY_DAYS; i++) {
+            var day = WaterLog.daysAgo(i);
+            if (day < first || day <= returned || WaterLog.dayMet(day)) {
+                break;
+            }
+            n++;
+        }
+        return n;
+    }
+
+    // Stored first day, else the oldest day in the history, else today.
+    function firstDay() as Number {
+        var v = Storage.getValue(KEY_FIRST_DAY);
+        if (v instanceof Number) {
+            return v;
+        }
+        var oldest = WaterLog.today();
+        var keys = WaterLog.history().keys();
+        for (var i = 0; i < keys.size(); i++) {
+            var k = keys[i];
+            if (k instanceof Number && k < oldest) {
+                oldest = k;
+            }
+        }
+        return oldest;
+    }
+
+    function markFirstDay() as Void {
+        if (Storage.getValue(KEY_FIRST_DAY) == null) {
+            Storage.setValue(KEY_FIRST_DAY, WaterLog.today());
+        }
+    }
+
+    function isAway() as Boolean {
+        if (Demo.active) {
+            return Demo.away;
+        }
+        return missedRun() > AWAY_AFTER_MISSED_DAYS;
+    }
+
+    // Coco comes back (first drink while away): the missed run restarts.
+    function comeBack() as Void {
+        if (Demo.active) {
+            Demo.away = false;          // never touch the real streak from the demo
+            return;
+        }
+        Storage.setValue(KEY_RETURNED_DAY, WaterLog.today());
     }
 
     const ON_TRACK_MIN = 80;
@@ -52,11 +116,31 @@ module Pet {
         return worst;
     }
 
-    // Current mood from the water habit (the only habit so far).
+    // Habits feeding the pet (index into scores()).
+    enum {
+        HABIT_WATER,
+        HABIT_STEPS
+    }
+
+    // Every habit's score, in HABIT_* order.
+    function scores() as Array<Number> {
+        return [Hydration.petScore(WaterLog.getMl(), Hydration.goalMl()), Steps.petScore()];
+    }
+
+    // The habit Coco needs most right now (water wins ties).
+    function worstHabit(s as Array<Number>) as Number {
+        return s[HABIT_STEPS] < s[HABIT_WATER] ? HABIT_STEPS : HABIT_WATER;
+    }
+
+    // Hydrated (the happiest look) once today's water goal is met and no
+    // other habit is falling behind.
     function currentMood() as Number {
-        var ml = WaterLog.getMl();
-        var goal = Hydration.goalMl();
-        return moodFor([Hydration.petScore(ml, goal)], ml >= goal, Prefs.isNight());
+        if (isAway()) {
+            return MOOD_AWAY;
+        }
+        var s = scores();
+        var waterMet = WaterLog.getMl() >= Hydration.goalMl();
+        return moodFor(s, waterMet && worstScore(s) >= ON_TRACK_MIN, Prefs.isNight());
     }
 
     // Worse = higher number among the awake moods.

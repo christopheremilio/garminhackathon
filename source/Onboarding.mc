@@ -42,6 +42,7 @@ module Onboarding {
     // All three answered (or skipped): back to the hamster.
     function finish() as Void {
         Prefs.setOnboarded();
+        Pet.markFirstDay();
         WaterLog.startClock();      // no instant "drink now!" for a brand-new user
         WatchUi.popView(WatchUi.SLIDE_DOWN);
         Screen.changed();

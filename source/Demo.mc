@@ -28,6 +28,9 @@ module Demo {
     var hat as Number? = null;      // accessories to show (closet step)
     var other as Number? = null;
     var badges as Number = 0;       // badge bits to show (badges step)
+    var steps as Number? = null;    // fake step count
+    var tempC as Number? = null;    // fake "feels like" temperature
+    var away as Boolean = false;    // Coco has walked off
 
     function resetInputs() as Void {
         bonusMl = 0;
@@ -37,5 +40,8 @@ module Demo {
         hat = null;
         other = null;
         badges = 0;
+        steps = null;
+        tempC = null;
+        away = false;
     }
 }

@@ -12,7 +12,7 @@ BUILD  := bin
 MONKEYC  := "$(SDK)/bin/monkeyc"
 MONKEYDO := "$(SDK)/bin/monkeydo"
 
-.PHONY: all build run sim demo test clean
+.PHONY: all build run sim demo test autopilot clean
 
 all: build
 
@@ -38,6 +38,14 @@ test:
 	@mkdir -p $(BUILD)
 	$(MONKEYC) -f monkey.jungle -w -l 3 -t -o $(BUILD)/$(APP)-test.prg -d $(DEVICE) -y "$(KEY)"
 	$(MONKEYDO) $(BUILD)/$(APP)-test.prg $(DEVICE) -t
+
+# Scripted UI test (source/Autopilot.mc): a separate build with the autopilot
+# switched on. Prints AUTO PASS/FAIL lines. Wipes the simulator app's storage.
+autopilot:
+	@mkdir -p $(BUILD)
+	$(MONKEYC) -f "monkey.jungle;autopilot.jungle" -w -l 3 -o $(BUILD)/$(APP)-autopilot.prg -d $(DEVICE) -y "$(KEY)"
+	@pgrep -f "ConnectIQ.app/Contents/MacOS/simulator" >/dev/null || (open "$(SDK)/bin/ConnectIQ.app" && sleep 10)
+	$(MONKEYDO) $(BUILD)/$(APP)-autopilot.prg $(DEVICE)
 
 # Launch the Connect IQ simulator (leave it running for `make run`).
 sim:

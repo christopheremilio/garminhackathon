@@ -193,8 +193,26 @@ notification with **+250** and **Snooze** buttons:
 |---|---|
 | **Your weight** | About 33 ml per kg, rounded up to whole glasses (70 kg means about 10 glasses). Between 6 and 14 glasses. |
 | **Intensity minutes** | Activity adds water: about 1 extra glass per 25 moderate minutes or 17 vigorous minutes, up to 6 extra glasses a day. |
+| **Hot weather** | When it feels 25 °C or hotter (using the weather your phone sends to the watch): +1 glass. At 30 °C or hotter: +2 glasses. No weather data, no change. |
 
 Your goal can grow during the day as you move. It never goes down during the day.
+
+## Steps: Coco's energy
+
+Coco also runs on your **steps**. Your goal is your Garmin daily step goal (10,000 if none
+is set), and like water it's compared with where you'd expect to be by this time of day.
+
+- Fall behind on steps and Coco gets **restless: "Coco wants a walk"**. The info line
+  shows how many steps to go.
+- Steps are gentler than water: they can make Coco restless, but **never make it cry or
+  faint**. Those are for water only.
+- The info line rotates in your count, for example **6,214 / 10,000 steps**.
+
+## After a workout
+
+When you finish a workout you recorded on the watch, Coco sends a notification straight
+away: **"Great workout! Drink 2 glasses to recover."** For the next hour the home screen
+shows **Post-workout: drink 2 glasses**.
 
 ## When you're working hard
 
@@ -208,6 +226,15 @@ If your heart rate has mostly been in **zone 3 or higher** for the last 30 minut
 Your **streak** is the number of days in a row you've met your goal. Today counts as soon as
 you reach it. Miss a day and the streak starts again from zero. The weekly page shows how
 the last 7 days went.
+
+## If you stop drinking for days: Coco walks out
+
+Miss your water goal **more than 3 days in a row** and Coco gets fed up. The next time you
+open the app, Coco **walks off the screen**, leaving paw prints and an empty room: **"Coco
+left. Drink to bring Coco back."** If the app is closed you'll get a notification instead.
+
+Your **next drink** brings Coco **walking back in**, and a new streak starts. Coco never
+leaves for good, and it doesn't count days before you started using the app.
 
 ## Closet and accessories
 
@@ -305,6 +332,27 @@ rate, so the [working hard](#when-youre-working-hard) reminders still kick in.
 
 ---
 
+## Watch sensors and data used
+
+| Sensor / data | What the app uses it for |
+|---|---|
+| **Heart rate** (recent history) | Spotting when you're working hard (mostly zone 3 or higher for 30 min): more frequent reminders and the hamster wheel |
+| **Activity tracking:** steps and step goal | Coco's energy (the steps habit) |
+| **Activity tracking:** intensity minutes | Extra water on active days |
+| **Recorded workouts** | The post-workout nudge when a workout ends |
+| **GPS** | Saving places, and knowing when you're at the gym, home or work |
+| **Weather** (from your phone) | Extra water on hot days ("feels like" temperature) |
+| **User profile:** weight, birth year, gender, heart rate zones | Your daily goal, first-launch answers, and the heart rate threshold |
+| **Clock** | Pace through the day, wake/bed hours, streaks |
+| **Vibration motor and speaker** | Buzzes and the bell ring for reminders |
+| **Touchscreen and buttons** | Everything you tap and press |
+
+**Permissions the app asks for:** Notifications, Background (reminders while it's
+closed), Heart rate history (`SensorHistory`), User profile, and GPS (`Positioning`).
+Everything stays on your watch. Nothing is uploaded.
+
+**Not used:** pulse ox, barometer, compass, body battery, stress and sleep data.
+
 ## Resetting
 
 - **Every night at midnight** today's water starts again at 0. Your streak and history are
@@ -318,6 +366,7 @@ rate, so the [working hard](#when-youre-working-hard) reminders still kick in.
 
 | Problem | Try this |
 |---|---|
+| Coco walked out | You missed your water goal more than 3 days in a row. Drink a glass and Coco walks back in. |
 | I'm not getting reminders | Check it's within your wake/bed hours, you haven't reached your goal, and you haven't snoozed. Make sure notifications are allowed for the app and your watch isn't in Do Not Disturb or Sleep mode. |
 | My hamster is always asleep | Check **Wake time** and **Bed time** under **Settings** in the menu. |
 | It collapsed even though I drank | The mood is based on how much you've had *for the time of day*. Drink a bit more and it recovers. |

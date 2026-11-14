@@ -5,6 +5,7 @@ import Toybox.SensorHistory;
 import Toybox.System;
 import Toybox.Time;
 import Toybox.UserProfile;
+import Toybox.Weather;
 
 // Adjusts the daily water goal and reminder interval from body weight,
 // today's intensity minutes, and recent heart rate. Shared by the foreground
@@ -92,7 +93,59 @@ module Hydration {
     // means done.
     function goalMl() as Number {
         var g = Units.GLASS_ML;
-        return (baseMl() + activityBonusMl() + g - 1) / g * g;
+        return (baseMl() + activityBonusMl() + heatBonusMl() + g - 1) / g * g;
+    }
+
+    // --- Hot day: more water when it feels hot -------------------------
+    // Uses the "feels like" temperature (heat index) the phone sends to the
+    // watch; no weather data, no bonus.
+    const WARM_C = 25;           // +1 glass
+    const HOT_C = 30;            // +2 glasses
+
+    function feelsLikeC() as Number? {
+        if (Demo.active) {
+            return Demo.tempC;      // the demo ignores real weather unless it sets one
+        }
+        if (!(Toybox has :Weather)) {
+            return null;
+        }
+        var c = Weather.getCurrentConditions();
+        if (c == null) {
+            return null;
+        }
+        var t = c.feelsLikeTemperature;
+        if (t == null) {
+            t = c.temperature;
+        }
+        return t != null ? t.toNumber() : null;
+    }
+
+    function heatBonusMl() as Number {
+        var t = feelsLikeC();
+        if (t == null) {
+            return 0;
+        }
+        if (t >= HOT_C) { return 2 * Units.GLASS_ML; }
+        if (t >= WARM_C) { return Units.GLASS_ML; }
+        return 0;
+    }
+
+    // --- Post-workout ----------------------------------------------------
+    // When a recorded workout ends, suggest 2 glasses for the next hour.
+    const WORKOUT_DRINK_ML = 500;
+    const WORKOUT_WINDOW_SEC = 3600;
+    const KEY_WORKOUT_END = "workoutEnd";
+
+    function markWorkoutEnded() as Void {
+        Storage.setValue(KEY_WORKOUT_END, WaterLog.nowSec());
+    }
+
+    function justWorkedOut() as Boolean {
+        if (Demo.active) {
+            return false;
+        }
+        var v = Storage.getValue(KEY_WORKOUT_END);
+        return v instanceof Number && WaterLog.nowSec() - v < WORKOUT_WINDOW_SEC;
     }
 
     // How much of today's goal comes from activity.
@@ -169,6 +222,9 @@ module Hydration {
 
     // A specific amount to suggest (ml), or null for the default.
     function suggestedDrinkMl(exerting as Boolean, place as Number?) as Number? {
+        if (justWorkedOut()) {
+            return WORKOUT_DRINK_ML;
+        }
         if (exerting) {
             return EXERTION_DRINK_ML;
         }

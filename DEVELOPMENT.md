@@ -28,7 +28,8 @@ source/
   Pet.mc                        (:background) mood from every habit's 0-100 score
   Prefs.mc                      (:background) hamster name, wake/bed times, waking-day fraction
   WaterLog.mc                   (:background) ml log, undo, history, streak, reminder timing, snooze
-  Hydration.mc                  (:background) adaptive goal, exertion, place rules, pet score
+  Hydration.mc                  (:background) adaptive goal (weight, activity, heat), exertion, place rules, workout window, pet score
+  Steps.mc                      (:background) habit #2: steps score (gentle, floored at "restless")
   Reminders.mc                  (:background) "<name> is crying" wording, mood-drop detection
   Places.mc                     (:background) saved places + "where am I" matching
   WaterServiceDelegate.mc       (:background) temporal event -> arrival / mood-drop / interval notification
@@ -47,7 +48,7 @@ source/
   DrinkAlert.mc                 Foreground-only bell (single ring) + vibration
   Demo.mc                       Demo switch + fake inputs the rules read while it runs
   DemoTour.mc                   Scripted looping feature walkthrough + title cards
-  Autopilot.mc                  Scripted input replay test (44 steps, PASS/FAIL to the log)
+  Autopilot.mc                  Scripted input replay test (46 steps; make autopilot only)
   Tests.mc                      Unit tests ((:test), run with make test)
 resources/
   strings/strings.xml           Text (background-used strings are scope="background")
@@ -95,15 +96,14 @@ make demo    # opens the simulator if needed, builds, and plays the demo
 
 ### Testing in the simulator
 
-**Demo tour (`Demo.ENABLED`, currently ON; set `false` for normal use):** a 12-beat,
-~65 s looping pitch starring **Coco** (`Demo.NAME`, whatever the user named their own
-hamster). Each beat shows a title card (time of day, headline, one-line pitch, progress
-dots), then the real app reacting. Hook ("Forget to drink?") → 7:30 rise and sip → 12:00
-thirsty → 13:00 drink now! (red room + angry stomp + bell + buzzes) → 16:00 fainted →
-16:05 back! → 17:45 gym mode (arrival banner + wheel) → 20:00 goal reached (party hat) →
-dress up → badges → your week → "Keep Coco happy. Stay hydrated." The time of day, heart
-rate, place, night, rewards and name are faked (`Demo.mc`), so it runs at any hour. **Any
-button stops it** and clears today's water. Each beat logs `DEMO step n/12`.
+**Demo tour (`Demo.ENABLED`, currently ON; set `false` for normal use):** the ~30 s cut
+starring **Coco** (`Demo.NAME`): 8 beats of a 1.3 s card + 2.4 s of the real app. Hook
+("Forget to drink?") → 7:30 one press (sip) → 13:00 drink now! (red room, stomp, bell,
+buzz) → 4 days later: Coco walks out → day 5: one sip, walks back in → 17:45 it reads your
+day (hot-day banner + wheel) → 20:00 goal reached (party hat) → "Keep Coco happy." The time
+of day, heart rate, steps (on target), weather (none unless set), away state, rewards and
+name are faked (`Demo.mc`), and nothing touches the real streak. Each beat logs
+`DEMO step n/8`. Run it with `make demo`.
 
 ### Automated tests
 
@@ -111,8 +111,9 @@ button stops it** and clears today's water. Each beat logs `DEMO step n/12`.
   in the simulator. They cover units, moods and deficit scoring, the log/undo, streaks,
   add-to-yesterday, rewards and badges, the reminder cap/snooze/countdown, mood-drop
   reminders, age/gender rules, prefs and places. They wipe the simulator app's storage.
-- **Autopilot** (`source/Autopilot.mc`, 44 steps): set `Autopilot.ENABLED = true` and
-  `make run`. It drives the real input handlers on a timer through first launch, quick
+- **Autopilot** (`source/Autopilot.mc`, 46 steps): `make autopilot`. This is a separate
+  build (`autopilot.jungle` keeps the `(:autopilot)` code that `monkey.jungle` excludes), so
+  normal builds and `make demo` can never run it. It drives the real input handlers on a timer through first launch, quick
   add/undo, every menu path and "Back to hamster", the closet (swipe, tap, locked items,
   wearing), page cycling, the angry reminder + snooze and reset. It prints
   `AUTO PASS/FAIL` lines and `AUTO DONE passed=… failed=…`. It can't judge looks,
@@ -152,6 +153,25 @@ every background check, writes `history[YYYYMMDD] = [ml, goalMl]`, keeping 35 da
 goal is saved alongside because it changes with activity. **Add to yesterday** edits
 yesterday's record. The **streak** counts consecutive met days back from yesterday, plus
 today once it's met. The day resets at local midnight.
+
+### Steps, hot days, workouts, walking off
+
+- **Steps** (`Steps.mc`): score = 100 − % behind pace, floored at 50, so steps alone can
+  reach "wants a walk" (the thirsty tier) but never cry or collapse. `Pet.scores()` =
+  [water, steps]; mood = worst; `Pet.worstHabit()` picks the wording. Hydrated needs the
+  water goal met and every habit on track.
+- **Hot day** (`Hydration.heatBonusMl`): `Weather.getCurrentConditions().feelsLikeTemperature`
+  (or temperature): ≥ 25 °C +1 glass, ≥ 30 °C +2, added to the goal.
+- **Post-workout** (`WaterServiceDelegate.onActivityCompleted`, registered via
+  `Background.registerForActivityCompletedEvent` in `getInitialView`): stores the end time,
+  notifies "Great workout! Drink 2 glasses" (not while the app is open or overnight), and
+  `suggestedDrinkMl` is 2 glasses for an hour.
+- **Walking off** (`Pet.isAway`): more than `AWAY_AFTER_MISSED_DAYS` (3) missed water days
+  in a row, counted back from yesterday, stopping at a met day, the last return
+  (`returnedDay`) or the first day using the app (`firstDay`). Mood `MOOD_AWAY`: the view plays
+  `REACT_WALK_OFF` once and then shows the empty room. Any drink (`WaterLog.add`) calls
+  `Pet.comeBack()`, and `Actions.logWater` plays `REACT_WALK_IN`. The mood-drop reminder covers
+  the closed-app case.
 
 ### Glasses (`Units.mc`)
 

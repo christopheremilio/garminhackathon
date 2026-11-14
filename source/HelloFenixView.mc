@@ -40,6 +40,14 @@ class HelloFenixView extends WatchUi.View {
     private var _drinkMl as Number? = null;
     private var _due as Boolean = false;
     private var _mood as Number = Pet.MOOD_ON_TRACK;
+    private var _worst as Number = Pet.HABIT_WATER;   // habit Coco needs most
+    private var _steps as Number = 0;
+    private var _stepGoal as Number = 10000;
+    private var _heatMl as Number = 0;
+    private var _feelsC as Number? = null;
+    private var _workout as Boolean = false;
+    private var _away as Boolean = false;
+    private var _walkOffShown as Boolean = false;
     private var _streak as Number = 0;
     private var _name as String = Prefs.DEFAULT_NAME;
     private var _recordedGoal as Number = 0;
@@ -55,7 +63,7 @@ class HelloFenixView extends WatchUi.View {
     function onShow() as Void {
         if (!_demoStarted) {
             _demoStarted = true;
-            if (Autopilot.ENABLED) {
+            if (Autopilot.isOn()) {
                 _startAutopilot = true;     // scripted UI test (started from onTick)
             } else if (Demo.ENABLED) {
                 DemoTour.start();
@@ -135,7 +143,25 @@ class HelloFenixView extends WatchUi.View {
         _interval = Hydration.intervalMin(_exerting, _place);
         _drinkMl = Hydration.suggestedDrinkMl(_exerting, _place);
         _due = WaterLog.isDue(_interval);
-        _mood = Pet.moodFor([Hydration.petScore(_ml, _goal)], _ml >= _goal, Prefs.isNight());
+        var scores = Pet.scores();
+        _worst = Pet.worstHabit(scores);
+        _mood = Pet.moodFor(scores, _ml >= _goal && Pet.worstScore(scores) >= Pet.ON_TRACK_MIN, Prefs.isNight());
+        _steps = Steps.count();
+        _stepGoal = Steps.goal();
+        _heatMl = Hydration.heatBonusMl();
+        _feelsC = Hydration.feelsLikeC();
+        _workout = Hydration.justWorkedOut();
+        _away = Pet.isAway();
+        if (_away) {
+            _mood = Pet.MOOD_AWAY;
+            // Walk off once (the first time we notice), then an empty room.
+            if (!_walkOffShown && Screen.reaction == HamsterArt.REACT_NONE && _reaction == HamsterArt.REACT_NONE) {
+                _walkOffShown = true;
+                Screen.reaction = HamsterArt.REACT_WALK_OFF;
+            }
+        } else {
+            _walkOffShown = false;
+        }
         _streak = WaterLog.streak();
         _name = Prefs.name();
         if (_goal != _recordedGoal && !Demo.active) {
@@ -146,7 +172,7 @@ class HelloFenixView extends WatchUi.View {
         // In-app reminder once each time a drink becomes due while we're on
         // screen: the reminder screen (angry jumping hamster, chime, buzzes).
         // The demo plays its own.
-        if (_due && !_remindedDue && !WaterLog.isSnoozed() && !Demo.active && Prefs.onboarded()) {
+        if (_due && !_remindedDue && !WaterLog.isSnoozed() && !Demo.active && Prefs.onboarded() && !_away) {
             _remindedDue = true;
             _showReminder = true;
         } else if (!_due) {
@@ -209,6 +235,10 @@ class HelloFenixView extends WatchUi.View {
     // Home room
 
     private function drawHome(dc as Dc, now as Number, rt as Number) as Void {
+        if (_mood == Pet.MOOD_AWAY || _reaction == HamsterArt.REACT_WALK_IN) {
+            drawAway(dc, now, rt);
+            return;
+        }
         var reviving = _reaction == HamsterArt.REACT_REVIVE;
         var mood = reviving ? Pet.MOOD_HYDRATED : _mood;
         var theme = Scenes.themeFor(reviving ? Pet.MOOD_ON_TRACK : _mood);
@@ -265,6 +295,47 @@ class HelloFenixView extends WatchUi.View {
         Scenes.pageDots(dc, Screen.page, Screen.PAGES, textColor);
     }
 
+    // Coco has left (or is walking off / back in). Walking off: worried,
+    // left to right off the edge. Away: empty room, paw prints leading off.
+    // Walking in: happy, from the left edge to the middle.
+    private function drawAway(dc as Dc, now as Number, rt as Number) as Void {
+        var walkingIn = _reaction == HamsterArt.REACT_WALK_IN;
+        var walkingOff = _reaction == HamsterArt.REACT_WALK_OFF;
+        var theme = walkingIn ? Scenes.THEME_DAY : Scenes.THEME_COLLAPSED;
+        var textColor = theme[2] as Number;
+        var fill = _goal > 0 ? _ml.toFloat() / _goal : 0.0;
+        Scenes.room(dc, theme[0] as Number, theme[1] as Number, fill, true, false);
+
+        var title = walkingIn ? fmt(Rez.Strings.TitleBack, [_name]) : fmt(Rez.Strings.TitleLeft, [_name]);
+        Scenes.fitTxt(dc, 130, 44, [Graphics.FONT_TINY, Graphics.FONT_XTINY] as Array<Graphics.FontType>,
+                      title, textColor, 130);
+        var line2 = walkingIn ? str(Rez.Strings.NewStreak) : fmt(Rez.Strings.BringBack, [_name]);
+        Scenes.fitTxt(dc, 130, 66, [Graphics.FONT_XTINY] as Array<Graphics.FontType>, line2, textColor, 170);
+
+        if (walkingOff) {
+            var x = 130 + (190 * rt / HamsterArt.WALK_OFF_MS);
+            HamsterArt.draw(dc, x, 132, 1.1, Pet.MOOD_THIRSTY, Rewards.wornHat(), HamsterArt.ACC_NONE,
+                            fill, false, now, _reaction, rt);
+        } else if (walkingIn) {
+            var x2 = -60 + (190 * rt / HamsterArt.WALK_IN_MS);
+            HamsterArt.draw(dc, x2, 132, 1.1, Pet.MOOD_HYDRATED, Rewards.wornHat(), HamsterArt.ACC_NONE,
+                            fill, false, now, _reaction, rt);
+        } else {
+            // paw prints leading off to the right
+            dc.setColor(0xAA5555, Graphics.COLOR_TRANSPARENT);
+            for (var i = 0; i < 5; i++) {
+                var px = 110 + i * 26;
+                var py = 204 + (i % 2) * 8;
+                dc.fillCircle(px, py, 4);
+                dc.fillCircle(px - 4, py - 6, 2);
+                dc.fillCircle(px + 4, py - 6, 2);
+            }
+        }
+        Scenes.waterRing(dc, _ml, _goal, Units.defaultAddMl());
+        Scenes.txt(dc, 130, 226, Graphics.FONT_XTINY, Units.pair(_ml, _goal), textColor);
+        Scenes.pageDots(dc, Screen.page, Screen.PAGES, textColor);
+    }
+
     // Goal reached: party room, party hat, stars, streak.
     private function drawGoalReward(dc as Dc, now as Number, rt as Number) as Void {
         var theme = Scenes.THEME_PARTY;
@@ -314,7 +385,9 @@ class HelloFenixView extends WatchUi.View {
     }
 
     private function titleFor(mood as Number) as String {
-        if (mood == Pet.MOOD_THIRSTY) { return fmt(Rez.Strings.TitleThirsty, [_name]); }
+        if (mood == Pet.MOOD_THIRSTY) {
+            return fmt(_worst == Pet.HABIT_STEPS ? Rez.Strings.TitleWalk : Rez.Strings.TitleThirsty, [_name]);
+        }
         if (mood == Pet.MOOD_LAST_WARNING) { return fmt(Rez.Strings.TitleCryingHome, [_name]); }
         if (mood == Pet.MOOD_COLLAPSED) { return fmt(Rez.Strings.TitleCollapsed, [_name]); }
         if (mood == Pet.MOOD_SLEEPING) { return fmt(Rez.Strings.TitleAsleep, [_name]); }
@@ -332,8 +405,14 @@ class HelloFenixView extends WatchUi.View {
         if (_mood == Pet.MOOD_SLEEPING) {
             return fmt(Rez.Strings.SleepingUntil, [Prefs.hourLabel(Prefs.wakeHour())]);
         }
+        if (_workout && _ml < _goal) {
+            return fmt(Rez.Strings.PostWorkout, [Units.amount(Hydration.WORKOUT_DRINK_ML)]);
+        }
         if (_due) {
             return _drinkMl != null ? fmt(Rez.Strings.DrinkNowExertion, [Units.amount(_drinkMl as Number)]) : str(Rez.Strings.DrinkNow);
+        }
+        if (_mood == Pet.MOOD_THIRSTY && _worst == Pet.HABIT_STEPS) {
+            return fmt(Rez.Strings.StepsToGo, [Steps.withCommas(_stepGoal - _steps)]);
         }
         var lines = [] as Array<String>;
         if (_ml >= _goal) {
@@ -345,9 +424,13 @@ class HelloFenixView extends WatchUi.View {
         if (_place != null) {
             lines.add(fmt(Rez.Strings.AtPlace, [placeName(_place as Number)]));
         }
+        if (_heatMl > 0 && _feelsC != null) {
+            lines.add(fmt(Rez.Strings.HeatLine, [_feelsC, Units.amount(_heatMl)]));
+        }
         if (_bonus > 0) {
             lines.add(fmt(Rez.Strings.ActivityBonus, [Units.total(_bonus)]));
         }
+        lines.add(fmt(Rez.Strings.StepsLine, [Steps.withCommas(_steps), Steps.withCommas(_stepGoal)]));
         if (_streak > 0) {
             lines.add(fmt(Rez.Strings.StreakDays, [_streak]));
         }

@@ -71,7 +71,7 @@ class ReminderView extends WatchUi.View {
                         WaterLog.getMl().toFloat() / Hydration.goalMl(), false,
                         now, jumping ? HamsterArt.REACT_ANGRY : HamsterArt.REACT_NONE, rt);
         Scenes.fitTxt(dc, 130, 140, [Graphics.FONT_TINY, Graphics.FONT_XTINY] as Array<Graphics.FontType>,
-                      Reminders.moodTitle(mood), Scenes.WHITE, 200);
+                      Reminders.moodTitle(mood, Pet.HABIT_WATER), Scenes.WHITE, 200);
         Scenes.txt(dc, 130, 166, Graphics.FONT_XTINY,
                    WatchUi.loadResource(Rez.Strings.DrinkNowShort) as String, Scenes.RED);
         dc.setColor(Scenes.DBLUE, Graphics.COLOR_TRANSPARENT);

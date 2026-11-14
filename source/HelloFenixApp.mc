@@ -42,6 +42,11 @@ class HelloFenixApp extends Application.AppBase {
         if (Background.getTemporalEventRegisteredTime() == null) {
             Background.registerForTemporalEvent(new Time.Duration(WaterLog.CHECK_MIN * 60));
         }
+        // Post-workout nudge: wake the background when a recorded activity ends.
+        if ((Background has :registerForActivityCompletedEvent)
+                && !Background.getActivityCompletedEventRegistered()) {
+            Background.registerForActivityCompletedEvent();
+        }
         // Any "+250" / "Snooze" taps made while the app was closed are
         // delivered here as soon as we register.
         Notifications.registerForNotificationMessages(method(:onNotification));

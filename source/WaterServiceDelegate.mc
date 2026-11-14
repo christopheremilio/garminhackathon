@@ -1,4 +1,5 @@
 import Toybox.Application;
+import Toybox.Activity;
 import Toybox.Background;
 import Toybox.Lang;
 import Toybox.Notifications;
@@ -30,6 +31,7 @@ class WaterServiceDelegate extends System.ServiceDelegate {
         var place = Places.currentPlace();   // null unless a recent GPS fix exists
         var interval = Hydration.intervalMin(exerting, place);
         var mood = Pet.currentMood();
+        var habit = Pet.worstHabit(Pet.scores());
         var dropped = Reminders.moodDropped(mood);   // always updates stored mood
 
         // App is open: its own reminder screen handles this, so don't post a
@@ -47,7 +49,7 @@ class WaterServiceDelegate extends System.ServiceDelegate {
             notify(msg[0], msg[1]);
         } else if (!quiet && dropped && WaterLog.reminderCapPassed(interval)) {
             // 2. Mood got worse.
-            notify(Reminders.moodTitle(mood), Reminders.moodBody(mood));
+            notify(Reminders.moodTitle(mood, habit), Reminders.moodBody(mood, habit));
         } else if (WaterLog.shouldNotify(interval)) {
             // 3. Regular reminder.
             var body;
@@ -64,7 +66,19 @@ class WaterServiceDelegate extends System.ServiceDelegate {
                     Application.loadResource(Rez.Strings.NotifyBody) as String,
                     [Units.pair(WaterLog.getMl(), Hydration.goalMl())]);
             }
-            notify(Reminders.moodTitle(mood), body);
+            notify(Reminders.moodTitle(mood, Pet.HABIT_WATER), body);
+        }
+        Background.exit(null);
+    }
+
+    // A recorded workout just ended: nudge for 2 glasses right away (unless
+    // the app is open or it's night), and suggest them in-app for an hour.
+    function onActivityCompleted(activity as { :sport as Activity.Sport, :subSport as Activity.SubSport }) as Void {
+        Hydration.markWorkoutEnded();
+        if (!WaterLog.foregroundActive() && !WaterLog.isQuietHours()) {
+            notify(Application.loadResource(Rez.Strings.WorkoutTitle) as String,
+                   Lang.format(Application.loadResource(Rez.Strings.WorkoutBody) as String,
+                               [Units.amount(Hydration.WORKOUT_DRINK_ML)]));
         }
         Background.exit(null);
     }
