@@ -4,7 +4,7 @@ import Toybox.System;
 import Toybox.WatchUi;
 
 // First-launch questions, one screen each, in the design's black style:
-//   1 of 3  Name your hamster   (NamePrompt.mc)
+//   1 of 3  Name your hamster   pick from a list or type (NamePrompt.mc)
 //   2 of 3  How old are you?    UP/DOWN change, START next
 //   3 of 3  You are...          Female / Male / Other / Prefer not to say
 // BACK skips a question (keeps the default / Garmin profile value) and moves
@@ -13,7 +13,7 @@ import Toybox.WatchUi;
 module Onboarding {
 
     function start() as Void {
-        showNamePrompt();
+        showNameMenu();
     }
 
     // Step 2.

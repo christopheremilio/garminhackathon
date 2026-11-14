@@ -95,7 +95,6 @@
     <string id="NewItem">New: $1$</string>
     <string id="BadgesTitle">Badges</string>
     <string id="BadgesEarned">$1$ of $2$ earned</string>
-    <string id="UnitsItem">Units</string>
     <string id="AccNone">Nothing</string>
     <string id="AccPartyHat">Party hat</string>
     <string id="AccBow">Bow</string>
@@ -139,4 +138,9 @@
 
     <!-- In-app arrival banner (demo) -->
     <string id="ArriveBanner">Gym: drink $1$</string>
+
+    <!-- Name list -->
+    <string id="NameStepTitle">1 of 3: Name</string>
+    <string id="TypeMyOwn">Type my own...</string>
+    <string id="CurrentName">Current</string>
 </strings>

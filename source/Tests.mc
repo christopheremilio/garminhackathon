@@ -22,19 +22,18 @@ function tCheck(logger as Logger, name as String, ok as Boolean) as Boolean {
 // ---------------------------------------------------------------------------
 
 (:test)
-function testUnits(logger as Logger) as Boolean {
+function testGlasses(logger as Logger) as Boolean {
     tReset();
-    var ok = tCheck(logger, "ml default", !Units.isOz());
-    ok = tCheck(logger, "total 1200 ml = 1.2 L", Units.total(1200).equals("1.2 L")) && ok;
-    ok = tCheck(logger, "pair", Units.pair(1200, 2000).equals("1.2 / 2.0 L")) && ok;
-    ok = tCheck(logger, "default add 250 ml", Units.defaultAddMl() == 250) && ok;
-    Units.toggle();
-    ok = tCheck(logger, "toggle to oz", Units.isOz()) && ok;
-    ok = tCheck(logger, "8 oz = 237 ml", Units.ozToMl(8) == 237) && ok;
-    ok = tCheck(logger, "237 ml = 8 oz", Units.mlToOz(237) == 8) && ok;
-    ok = tCheck(logger, "default add 8 oz", Units.defaultAddMl() == 237) && ok;
-    ok = tCheck(logger, "amount text oz", Units.amount(237).equals("8 oz")) && ok;
-    ok = tCheck(logger, "quick amounts oz", Units.quickAmountsMl()[2] == 473) && ok;
+    var ok = tCheck(logger, "START adds one glass (250 ml)", Units.defaultAddMl() == 250);
+    ok = tCheck(logger, "quick amounts 1/2, 1, 2", Units.quickAmountsMl()[0] == 125
+                                                 && Units.quickAmountsMl()[2] == 500) && ok;
+    ok = tCheck(logger, "1 glass", Units.amount(250).equals("1 glass")) && ok;
+    ok = tCheck(logger, "2 glasses", Units.amount(500).equals("2 glasses")) && ok;
+    ok = tCheck(logger, "half glass", Units.amount(125).equals("1/2 glass")) && ok;
+    ok = tCheck(logger, "pair 3 / 9 glasses", Units.pair(750, 2250).equals("3 / 9 glasses")) && ok;
+    ok = tCheck(logger, "halves shown as .5", Units.glasses(875).equals("3.5")) && ok;
+    ok = tCheck(logger, "circle label 1/2", Units.amountNumber(125).equals("1/2")) && ok;
+    ok = tCheck(logger, "goal is whole glasses", Hydration.goalMl() % 250 == 0) && ok;
     return ok;
 }
 

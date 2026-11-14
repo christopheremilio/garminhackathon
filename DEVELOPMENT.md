@@ -36,18 +36,18 @@ source/
   Screen.mc                     Page, "data changed" and "play a reaction" signals
   Menus.mc                      Hold-UP menu + Hamster / Places / Settings submenus, "Back to hamster"
   Onboarding.mc                 First-launch questions 2-3 (age, gender) + settings editors
-  QuickAdd.mc                   Add water screen: 150/250/500 (5/8/16 oz), undo last, add to yesterday
+  QuickAdd.mc                   Add water screen: 1/2, 1, 2 glasses, undo last, add to yesterday
   Rewards.mc                    Goal-day count, 12 accessories (1 per 3 goal days), 9 badges, what's worn
   Closet.mc                     Closet browser: preview all 12 (locked too), wear one hat + one other; swipe/tap
-  Units.mc                      (:background) ml/oz display and preset amounts (storage is always ml)
+  Units.mc                      (:background) everything shown in glasses (250 ml); half-glass steps
   HamsterGlance.mc              (:glance) glance view: face + name + today's water, from a stored summary
-  NamePrompt.mc                 First-launch question 1 (name) + keyboard (also used to rename)
+  NamePrompt.mc                 Name list (10 suggestions + Type my own) for first launch and rename; keyboard host
   ReminderScreen.mc             In-app reminder: red ring, +250 / Snooze
   PlacesMenu.mc                 Place names, forget-places confirmation, GPS save screen
-  DrinkAlert.mc                 Foreground-only chime + vibration
+  DrinkAlert.mc                 Foreground-only bell (single ring) + vibration
   Demo.mc                       Demo switch + fake inputs the rules read while it runs
   DemoTour.mc                   Scripted looping feature walkthrough + title cards
-  Autopilot.mc                  Scripted input replay test (39 steps, PASS/FAIL to the log)
+  Autopilot.mc                  Scripted input replay test (44 steps, PASS/FAIL to the log)
   Tests.mc                      Unit tests ((:test), run with make test)
 resources/
   strings/strings.xml           Text (background-used strings are scope="background")
@@ -87,17 +87,23 @@ The Monkey C extension picks up the SDK from
 `monkeyC.developerKeyPath`. Open this folder as the workspace, then use
 **Monkey C: Build Current Project**, **Run Current Project**, **Start Simulator**.
 
+### Run the demo
+
+```sh
+make demo    # opens the simulator if needed, builds, and plays the demo
+```
+
 ### Testing in the simulator
 
-**Demo tour, "A day with <name>" (`Demo.ENABLED`, currently ON; set `false` for normal
-use):** every time the app opens it auto-plays a looping 15-step story: a title card
-(time of day, headline, one-line pitch, progress dots), then the real app reacting.
-Meet → 7:30 rise and sip → 9:00 oops (undo) → 12:00 thirsty → 12:30 drink now! (angry
-stomp + buzzes) → 14:30 red alert → 16:00 fainted → 16:05 back! → 17:30 at the gym →
-17:45 working hard (wheel) → 20:00 goal reached (party hat) → dress up → badges → your
-week → "Keep <name> happy". The time of day, heart rate, place, night and rewards are
-faked (`Demo.mc`), so it runs at any hour. **Any button stops it** and clears today's
-water. First-launch questions are skipped while it runs. Each step logs `DEMO step n/15`.
+**Demo tour (`Demo.ENABLED`, currently ON; set `false` for normal use):** a 12-beat,
+~65 s looping pitch starring **Coco** (`Demo.NAME`, whatever the user named their own
+hamster). Each beat shows a title card (time of day, headline, one-line pitch, progress
+dots), then the real app reacting. Hook ("Forget to drink?") → 7:30 rise and sip → 12:00
+thirsty → 13:00 drink now! (red room + angry stomp + bell + buzzes) → 16:00 fainted →
+16:05 back! → 17:45 gym mode (arrival banner + wheel) → 20:00 goal reached (party hat) →
+dress up → badges → your week → "Keep Coco happy. Stay hydrated." The time of day, heart
+rate, place, night, rewards and name are faked (`Demo.mc`), so it runs at any hour. **Any
+button stops it** and clears today's water. Each beat logs `DEMO step n/12`.
 
 ### Automated tests
 
@@ -105,12 +111,17 @@ water. First-launch questions are skipped while it runs. Each step logs `DEMO st
   in the simulator. They cover units, moods and deficit scoring, the log/undo, streaks,
   add-to-yesterday, rewards and badges, the reminder cap/snooze/countdown, mood-drop
   reminders, age/gender rules, prefs and places. They wipe the simulator app's storage.
-- **Autopilot** (`source/Autopilot.mc`, 39 steps): set `Autopilot.ENABLED = true` and
+- **Autopilot** (`source/Autopilot.mc`, 44 steps): set `Autopilot.ENABLED = true` and
   `make run`. It drives the real input handlers on a timer through first launch, quick
   add/undo, every menu path and "Back to hamster", the closet (swipe, tap, locked items,
   wearing), page cycling, the angry reminder + snooze and reset. It prints
   `AUTO PASS/FAIL` lines and `AUTO DONE passed=… failed=…`. It can't judge looks,
   animation or vibration.
+- **Autopilot safety:** it starts from the view's timer (not `onShow`) and stops at the
+  first failure ("AUTO STOPPED"), so it never sends inputs to the wrong screen.
+- **Simulator stuck?** If `monkeydo` prints nothing at all (not even "DEMO start"/"AUTO
+  start"), the simulator is wedged (often after swapping apps quickly). Quit it and
+  `make sim` again.
 - **Seeing app output:** `monkeydo` writes app output (`System.println`, crash stacks) to a
   terminal, not to a redirected file. To capture it, run under `script`:
   `sleep 3600 | script -q out.log "$SDK/bin/monkeydo" bin/HelloFenix.prg fenix7pro`.
@@ -141,6 +152,12 @@ every background check, writes `history[YYYYMMDD] = [ml, goalMl]`, keeping 35 da
 goal is saved alongside because it changes with activity. **Add to yesterday** edits
 yesterday's record. The **streak** counts consecutive met days back from yesterday, plus
 today once it's met. The day resets at local midnight.
+
+### Glasses (`Units.mc`)
+
+Users only ever see **glasses** (1 glass = 250 ml); storage stays in ml. START adds 1
+glass, quick add offers 1/2, 1 and 2, and `Hydration.goalMl()` rounds up to whole glasses
+so "9 / 9 glasses" always means done. The ml/oz setting was removed.
 
 ### Adaptive goal (`Hydration.mc`)
 
@@ -208,8 +225,9 @@ known fix only if it's under 15 min old.
   stars, streak).
 - **Angry reminder** (`REACT_ANGRY`): when a drink becomes due in the foreground, the view
   pushes `ReminderView`. There the hamster stomp-jumps every `ANGRY_JUMP_MS` (500 ms) with
-  furrowed brows, red cheeks, "!!" and ear steam, for 9 s. `DrinkAlert.angry()` plays the
-  chime and a 120 ms buzz on every landing (6 buzzes), timed off the same constant.
+  furrowed brows, red cheeks, "!!" and ear steam, for 9 s. `DrinkAlert.angry()` rings the
+  bell, then a 120 ms buzz on every landing. `vibrate()` takes at most 8 profiles, so it
+  covers 4 jumps and `ReminderView` re-triggers it every 2 s while the hamster jumps.
 - **First launch** (`Onboarding`): the name → age → gender screens replace each other
   (`switchToView`), BACK skips, and the last step sets `Prefs.onboarded()` and pops to the
   hamster. Age and gender default to the Garmin profile.
@@ -278,7 +296,7 @@ the angry jumping reminder with buzzes; the design's blue water-drop tuft was re
 closet previews locked items and supports swipe/tap.
 
 **Second pass (built):** closet with 12 accessories (8 new drawings in the design's style
-alongside the design's party hat, glasses, crown and bow), badges, glance, ml/oz units.
+alongside the design's party hat, glasses, crown and bow), badges, glance (ml/oz units later replaced by glasses).
 
 ## Things worth knowing
 

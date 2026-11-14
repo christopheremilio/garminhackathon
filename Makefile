@@ -12,7 +12,7 @@ BUILD  := bin
 MONKEYC  := "$(SDK)/bin/monkeyc"
 MONKEYDO := "$(SDK)/bin/monkeydo"
 
-.PHONY: all build run sim test clean
+.PHONY: all build run sim demo test clean
 
 all: build
 
@@ -24,6 +24,12 @@ build:
 
 # Build, then load the app into a running simulator.
 run: build
+	$(MONKEYDO) $(BUILD)/$(APP).prg $(DEVICE)
+
+# One step: open the simulator if it isn't running, build, and load the app.
+# With Demo.ENABLED = true (as committed) the demo plays straight away.
+demo: build
+	@pgrep -f "ConnectIQ.app/Contents/MacOS/simulator" >/dev/null || (open "$(SDK)/bin/ConnectIQ.app" && sleep 10)
 	$(MONKEYDO) $(BUILD)/$(APP).prg $(DEVICE)
 
 # Unit tests (source/Tests.mc): build with -t and run in the simulator.

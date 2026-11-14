@@ -90,6 +90,9 @@ module Prefs {
     }
 
     function name() as String {
+        if (Demo.active) {
+            return Demo.NAME;
+        }
         var v = Storage.getValue(KEY_NAME);
         return (v instanceof String && v.length() > 0) ? v : DEFAULT_NAME;
     }

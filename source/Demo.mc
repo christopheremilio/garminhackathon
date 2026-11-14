@@ -13,6 +13,9 @@ module Demo {
     // Set false for normal use.
     const ENABLED = true;
 
+    // The demo's star, whatever the user named their own hamster.
+    const NAME = "Coco";
+
     // Normal reminder interval used during the demo, regardless of the
     // (possibly test-lowered) WaterLog.INTERVAL_MIN.
     const INTERVAL_MIN = 60;

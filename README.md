@@ -34,20 +34,22 @@ app needs each one for the features below.
 
 ## First launch: three quick questions
 
-1. **Name your hamster.** Press **START** to type a name (up to 10 letters) on the watch
-   keyboard, or **BACK** to keep **Mizu**.
+1. **Name your hamster.** Scroll the list of names (Mizu, Coco, Peanut, Mochi, Biscuit,
+   Nibbles, Pip, Hazel, Waffles, Bubbles) and press **START** on one. Or choose **Type my
+   own...** to enter any name up to 10 letters on the watch keyboard. **BACK** keeps
+   **Mizu**.
 2. **How old are you?** **UP/DOWN** changes the number and **START** confirms.
 3. **You are:** Female, Male, Other, or Prefer not to say.
 
 Age and gender start from your Garmin profile if it has them, so usually you just confirm.
 **BACK** skips any question. You can change all three later: rename from the **Hamster**
-menu, and age and gender from **Settings**.
+menu (same list, or type your own), and age and gender from **Settings**.
 
 **What they're used for:**
 - Your **weight** (from Garmin Connect) sets your goal when it's available.
-- Without a weight, **gender** sets the starting goal: 2.5 L male, 2.0 L female, 2.2 L
+- Without a weight, **gender** sets the starting goal: 10 glasses male, 8 female, 9
   otherwise.
-- **Under 14**, the goal is capped at about 1.7 L.
+- **Under 14**, the goal is capped at about 7 glasses.
 - **65 and over**, reminders come every 45 minutes instead of 60, because thirst fades
   with age.
 
@@ -60,7 +62,7 @@ menu, and age and gender from **Settings**.
   watch. Your daily goal is based on it.
 - **Check your heart rate zones** in Garmin Connect. The app uses them to tell when you're
   working hard.
-- **Turn on watch tones** in the watch's system sound settings if you want to hear a chime
+- **Turn on watch tones** in the watch's system sound settings if you want to hear the bell
   when it's time to drink.
 - **Save your places** (Home, Gym, Work) so reminders fit where you are. See
   [Places](#places).
@@ -98,17 +100,16 @@ for example, you should be past halfway to your goal.
         Coco                  <- name, or "Coco is thirsty" etc.
     12 day streak             <- rotating info line (see below)
  [window]  (hamster)  [bottle]
-      1.2 / 2.0 L             <- today's water and goal
+    3 / 9 glasses             <- glasses so far / today's goal
 ```
 
-- The **ring** around the edge tracks today's water. It has one segment per 250 ml (8 oz)
-  of your goal and fills clockwise from 7 o'clock. The segment you're on fills partway, and
+- The **ring** around the edge tracks today's water. It has one segment per glass of your goal and fills clockwise from 7 o'clock. The segment you're on fills partway, and
   the whole ring turns **green** when you reach your goal.
 - The **bottle** in the room fills up too, and the dots in the gap at the bottom show which
   page you're on.
 - The **second line** shows what matters most right now: **Drink now** or **Drink to
   revive** when it's urgent. Otherwise it rotates every few seconds between your
-  **streak**, **Next drink in 42 min**, **At Gym**, **Working hard!**, **+0.5 L for
+  **streak**, **Next drink in 42 min**, **At Gym**, **Working hard!**, **+2 glasses for
   activity** and **Goal met!**, whichever apply.
 
 Press **UP/DOWN** to move between the four pages: **Home → Weekly → Closet → Badges**.
@@ -129,7 +130,7 @@ Press **UP/DOWN** to move between the four pages: **Home → Weekly → Closet �
 
 | Button | What it does |
 |---|---|
-| **START** | Add **250 ml** (8 oz). On the Closet page: open the closet (or tap / swipe left-right) |
+| **START** | Add **1 glass** of water. On the Closet page: open the closet (or tap / swipe left-right) |
 | **UP / DOWN** | Switch page: Home, Weekly, Closet, Badges |
 | **Hold UP** | Menu (see below) |
 | **BACK** | Close the app. Reminders keep working |
@@ -138,10 +139,10 @@ Press **UP/DOWN** to move between the four pages: **Home → Weekly → Closet �
 
 ```
 Menu
-  Add water           150 / 250 / 500 ml, Undo last, Add to yesterday
+  Add water           1/2, 1 or 2 glasses, Undo last, Add to yesterday
   Hamster        >    Rename hamster, Dress up
   Places         >    Save as Home / Gym / Work / Other, Forget places
-  Settings       >    Wake time, Bed time, Units, Age, Gender
+  Settings       >    Wake time, Bed time, Age, Gender
   Reset today
   Back to hamster
 ```
@@ -162,7 +163,7 @@ a drink. Yesterday stays editable all of today.
 ## Reminders
 
 **While the app is open:** when a drink is due, your hamster **jumps up and down in anger**
-(furrowed brows, steam from its ears, "!!"). The watch chimes and **buzzes on every jump**.
+(furrowed brows, steam from its ears, "!!"). A bell rings and the watch **buzzes on every jump**.
 Press **+250** (START) or **Snooze** (DOWN); BACK just closes it.
 
 **While the app is closed:** about every 15 minutes the watch checks, and you may get a
@@ -170,9 +171,9 @@ notification with **+250** and **Snooze** buttons:
 
 | Why | Example |
 |---|---|
-| You **arrived** at a saved place | *At the gym*: Drink 500 ml before you start. |
+| You **arrived** at a saved place | *At the gym*: Drink 2 glasses before you start. |
 | Your hamster got **worse** | *Coco is crying*: Drink now |
-| It's been **about an hour** since your last drink | *Coco wants a drink*: 1.2 / 2.0 L so far today |
+| It's been **about an hour** since your last drink | *Coco wants a drink*: 3 / 9 glasses so far today |
 
 - **Rules:** no reminders outside your wake/bed hours, after you've hit your goal, or while
   snoozed. Arrival reminders aside, you won't get them more often than every 30 minutes.
@@ -181,7 +182,7 @@ notification with **+250** and **Snooze** buttons:
 - **Snooze** silences reminders for 1 hour.
 - **Notification buttons:** **+250** and **Snooze** pressed on a notification take effect
   the next time you open the app. +250 is logged at the time the reminder arrived.
-- **Sounds:** the chime plays only while the app is open. Notifications use your watch's
+- **Sounds:** a single bell ring, only while the app is open. Notifications use your watch's
   normal notification alert.
 
 ---
@@ -190,8 +191,8 @@ notification with **+250** and **Snooze** buttons:
 
 | What | How it affects your goal |
 |---|---|
-| **Your weight** | About 33 ml per kg (70 kg means about 2.3 L). Never below 1.5 L or above 3.5 L. |
-| **Intensity minutes** | Each moderate minute adds 10 ml and each vigorous minute adds 15 ml, up to 1.5 L extra a day. |
+| **Your weight** | About 33 ml per kg, rounded up to whole glasses (70 kg means about 10 glasses). Between 6 and 14 glasses. |
+| **Intensity minutes** | Activity adds water: about 1 extra glass per 25 moderate minutes or 17 vigorous minutes, up to 6 extra glasses a day. |
 
 Your goal can grow during the day as you move. It never goes down during the day.
 
@@ -199,7 +200,7 @@ Your goal can grow during the day as you move. It never goes down during the day
 
 If your heart rate has mostly been in **zone 3 or higher** for the last 30 minutes:
 
-- reminders come every **25 minutes** and suggest **500 ml**,
+- reminders come every **25 minutes** and suggest **2 glasses**,
 - your hamster runs in its **wheel**, and the info line says **Working hard!**.
 
 ## Streaks
@@ -258,12 +259,11 @@ Add the app to your watch's **glances** (the list you scroll through from the wa
 to see your hamster's face, its name, today's water and a progress bar without opening the
 app. It updates whenever you log water and about every 15 minutes.
 
-## Units
+## Glasses, not units
 
-Hold UP → **Settings** → **Units** switches between **ml** (totals in litres) and **oz**. In oz, START adds
-8 oz and the quick amounts are 5 / 8 / 16 oz.
-
----
+Everything is counted in **glasses of water**, so there's nothing to convert. One glass is
+a normal cup (about 250 ml / 8 oz). START adds a glass, and the Add water screen also offers
+half a glass and two glasses.
 
 ## Places
 
@@ -284,7 +284,7 @@ If it can't get a fix within a minute it shows **No GPS fix**; try again outdoor
 
 | Place | Reminders | Arriving there |
 |---|---|---|
-| **Gym** | Every **20 minutes**, suggesting **500 ml** | *At the gym*: Drink 500 ml before you start. |
+| **Gym** | Every **20 minutes**, suggesting **2 glasses** | *At the gym*: Drink 2 glasses before you start. |
 | **Work** | Every **45 minutes** | *At work*: Start with a glass of water. |
 | **Home** | Normal | *Welcome home*: Time for a glass of water. |
 | **Other** | Normal | *You've arrived*: Grab a glass of water. |
@@ -321,7 +321,7 @@ rate, so the [working hard](#when-youre-working-hard) reminders still kick in.
 | I'm not getting reminders | Check it's within your wake/bed hours, you haven't reached your goal, and you haven't snoozed. Make sure notifications are allowed for the app and your watch isn't in Do Not Disturb or Sleep mode. |
 | My hamster is always asleep | Check **Wake time** and **Bed time** under **Settings** in the menu. |
 | It collapsed even though I drank | The mood is based on how much you've had *for the time of day*. Drink a bit more and it recovers. |
-| I don't hear the chime | The chime only plays while the app is open. Make sure tones are on in the watch's system sound settings. |
+| I don't hear the bell | The bell only rings while the app is open. Make sure tones are on in the watch's system sound settings. |
 | I tapped **+250** or **Snooze** on a notification and nothing changed | Notification buttons take effect the next time you open the app. |
 | My goal seems too high or too low | Check your weight in Garmin Connect and sync. |
 | It never says "At Gym" | Re-save the place outdoors, and open the app when you arrive. |

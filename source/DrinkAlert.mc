@@ -6,26 +6,12 @@ import Toybox.System;
 // Toybox.Attention isn't available to background services.
 module DrinkAlert {
 
-    const SOUND_ON = true;   // set false for vibration only
+    const SOUND_ON = true;   // set false for vibration only (no bell)
 
-    // A short rising three-note chime (like a drip) plus a double buzz.
-    // The chime respects the watch's own Sounds setting (tonesOn).
+    // "Time to drink": a single ring of a bell plus a double buzz.
+    // The bell respects the watch's own Sounds setting (tonesOn).
     function play() as Void {
-        if (SOUND_ON && System.getDeviceSettings().tonesOn) {
-            if (Attention has :ToneProfile) {
-                Attention.playTone({
-                    :toneProfile => [
-                        new Attention.ToneProfile(1400, 90),
-                        new Attention.ToneProfile(0, 40),
-                        new Attention.ToneProfile(1900, 90),
-                        new Attention.ToneProfile(0, 40),
-                        new Attention.ToneProfile(2600, 180)
-                    ] as Array<Attention.ToneProfile>
-                });
-            } else if (Attention has :playTone) {
-                Attention.playTone(Attention.TONE_ALERT_HI);
-            }
-        }
+        bell();
         if (Attention has :vibrate) {
             Attention.vibrate([
                 new Attention.VibeProfile(75, 300),
@@ -35,7 +21,32 @@ module DrinkAlert {
         }
     }
 
-    // The angry "drink now!" alert: the chime, then a buzz on every landing
+    // One ring of a bell. Watch speakers only play plain tones, so: a short
+    // bright strike, then the bell's note ringing out in shorter and shorter
+    // pulses so it sounds like it fades away.
+    function bell() as Void {
+        if (!SOUND_ON || !System.getDeviceSettings().tonesOn) {
+            return;
+        }
+        if (Attention has :ToneProfile) {
+            Attention.playTone({
+                :toneProfile => [
+                    new Attention.ToneProfile(3520, 35),    // strike
+                    new Attention.ToneProfile(2093, 220),   // ring...
+                    new Attention.ToneProfile(0, 20),
+                    new Attention.ToneProfile(2093, 150),
+                    new Attention.ToneProfile(0, 30),
+                    new Attention.ToneProfile(2093, 90),
+                    new Attention.ToneProfile(0, 40),
+                    new Attention.ToneProfile(2093, 50)     // ...fading
+                ] as Array<Attention.ToneProfile>
+            });
+        } else if (Attention has :playTone) {
+            Attention.playTone(Attention.TONE_ALERT_HI);
+        }
+    }
+
+    // The angry "drink now!" alert: the bell, then a buzz on every landing
     // of the hamster's angry jumps (HamsterArt.ANGRY_JUMP_MS apart).
     // Attention.vibrate() takes at most 8 VibeProfiles, so one call covers
     // 4 jumps (4 x buzz + gap); call angryBuzzes() again to keep going.
@@ -43,7 +54,7 @@ module DrinkAlert {
     const ANGRY_BUZZ_SPAN_MS = 2000;   // ANGRY_BUZZES * HamsterArt.ANGRY_JUMP_MS
 
     function angry() as Void {
-        playChime();
+        bell();
         angryBuzzes();
     }
 
@@ -59,17 +70,4 @@ module DrinkAlert {
         }
     }
 
-    function playChime() as Void {
-        if (SOUND_ON && System.getDeviceSettings().tonesOn && (Attention has :ToneProfile)) {
-            Attention.playTone({
-                :toneProfile => [
-                    new Attention.ToneProfile(2600, 90),
-                    new Attention.ToneProfile(0, 40),
-                    new Attention.ToneProfile(1900, 90),
-                    new Attention.ToneProfile(0, 40),
-                    new Attention.ToneProfile(1400, 180)
-                ] as Array<Attention.ToneProfile>
-            });
-        }
-    }
 }

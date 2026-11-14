@@ -7,7 +7,7 @@ import Toybox.WatchUi;
 //     Add water          -> quick-add screen (150/250/500, undo, yesterday)
 //     Hamster    >       Rename, Dress up
 //     Places     >       Save as Home / Gym / Work / Other, Forget places
-//     Settings   >       Wake time, Bed time, Units, Age, Gender
+//     Settings   >       Wake time, Bed time, Age, Gender
 //     Reset today
 //     Back to hamster
 //
@@ -41,7 +41,7 @@ module Menus {
     }
 
     function settingsSummary() as String {
-        return Prefs.hourLabel(Prefs.wakeHour()) + "-" + Prefs.hourLabel(Prefs.bedHour()) + ", " + Units.label();
+        return Prefs.hourLabel(Prefs.wakeHour()) + "-" + Prefs.hourLabel(Prefs.bedHour());
     }
 
     function mainMenu() as WatchUi.Menu2 {
@@ -81,7 +81,6 @@ module Menus {
         var m = new WatchUi.Menu2({ :title => Rez.Strings.MenuSettings });
         m.addItem(item(Rez.Strings.WakeTime, Prefs.hourLabel(Prefs.wakeHour()), :wake));
         m.addItem(item(Rez.Strings.BedTime, Prefs.hourLabel(Prefs.bedHour()), :bed));
-        m.addItem(item(Rez.Strings.UnitsItem, Units.label(), :units));
         m.addItem(item(Rez.Strings.AgeItem, Onboarding.ageLabel(), :age));
         m.addItem(item(Rez.Strings.GenderItem, Onboarding.genderLabel(Prefs.gender()), :gender));
         m.addItem(backItem());
@@ -152,7 +151,7 @@ class HamsterMenuDelegate extends WatchUi.Menu2InputDelegate {
     function onSelect(item as WatchUi.MenuItem) as Void {
         var id = item.getId();
         if (id == :rename) {
-            showNameKeyboard(Prefs.name());
+            showRenameMenu();
         } else if (id == :closet) {
             // Replace the menu so closing the closet returns to the hamster.
             var view = new ClosetView();
@@ -202,9 +201,6 @@ class SettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
             item.setSubLabel(Prefs.hourLabel(Prefs.cycleWake()));
         } else if (id == :bed) {
             item.setSubLabel(Prefs.hourLabel(Prefs.cycleBed()));
-        } else if (id == :units) {
-            Units.toggle();
-            item.setSubLabel(Units.label());
         } else if (id == :age) {
             var view = new AgeView(false, item);
             WatchUi.pushView(view, new AgeDelegate(view), WatchUi.SLIDE_LEFT);

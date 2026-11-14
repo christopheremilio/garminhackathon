@@ -27,6 +27,7 @@ class HelloFenixView extends WatchUi.View {
     private var _namePrompted as Boolean = false;
     private var _remindedDue as Boolean = false;
     private var _showReminder as Boolean = false;
+    private var _startAutopilot as Boolean = false;
 
     // Cached state
     private var _stateAt as Number = 0;
@@ -55,7 +56,7 @@ class HelloFenixView extends WatchUi.View {
         if (!_demoStarted) {
             _demoStarted = true;
             if (Autopilot.ENABLED) {
-                Autopilot.start();          // scripted UI test, instead of the demo
+                _startAutopilot = true;     // scripted UI test (started from onTick)
             } else if (Demo.ENABLED) {
                 DemoTour.start();
             }
@@ -87,6 +88,11 @@ class HelloFenixView extends WatchUi.View {
 
     // Timer callback. Screens are pushed from here, not from onUpdate.
     function onTick() as Void {
+        if (_startAutopilot) {
+            _startAutopilot = false;
+            Autopilot.start();
+            return;
+        }
         if (!_namePrompted && !Demo.active && !Autopilot.active && !Prefs.onboarded()) {
             _namePrompted = true;
             Onboarding.start();

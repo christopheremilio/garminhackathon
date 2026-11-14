@@ -88,8 +88,11 @@ module Hydration {
         return ml > MAX_ACTIVITY_BONUS_ML ? MAX_ACTIVITY_BONUS_ML : ml;
     }
 
+    // Today's goal, rounded up to whole glasses so "9 / 9 glasses" always
+    // means done.
     function goalMl() as Number {
-        return baseMl() + activityBonusMl();
+        var g = Units.GLASS_ML;
+        return (baseMl() + activityBonusMl() + g - 1) / g * g;
     }
 
     // How much of today's goal comes from activity.

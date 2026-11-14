@@ -1,78 +1,55 @@
 import Toybox.Application;
 import Toybox.Lang;
 
-// Display units. Water is always stored in ml; this only changes how it's
-// shown and which preset amounts are offered (ml: 150/250/500, oz: 5/8/16).
+// Everything the user sees is in glasses of water, so nobody has to think
+// about units. A glass is 250 ml; water is still stored in ml underneath.
+// Amounts come in half-glass steps (1/2, 1, 2 on the quick-add screen).
 (:background)
 module Units {
 
-    enum {
-        ML,
-        OZ
-    }
+    const GLASS_ML = 250;
 
-    const KEY_UNIT = "unit";
-    const ML_PER_OZ = 29.5735;
-
-    function unit() as Number {
-        var v = Storage.getValue(KEY_UNIT);
-        return (v instanceof Number && v == OZ) ? OZ : ML;
-    }
-
-    function toggle() as Number {
-        var u = unit() == ML ? OZ : ML;
-        Storage.setValue(KEY_UNIT, u);
-        return u;
-    }
-
-    function isOz() as Boolean {
-        return unit() == OZ;
-    }
-
-    function ozToMl(oz as Number) as Number {
-        return (oz * ML_PER_OZ + 0.5).toNumber();
-    }
-
-    function mlToOz(ml as Number) as Number {
-        return (ml / ML_PER_OZ + 0.5).toNumber();
-    }
-
-    // Preset amounts in ml for the current unit.
-    function quickAmountsMl() as Array<Number> {
-        return isOz() ? [ozToMl(5), ozToMl(8), ozToMl(16)] : [150, 250, 500];
-    }
-
-    // What START / "+250" adds.
+    // What START / the "+1 glass" action adds.
     function defaultAddMl() as Number {
-        return isOz() ? ozToMl(8) : 250;
+        return GLASS_ML;
     }
 
-    // A single drink: "250 ml" / "8 oz".
+    // Quick-add choices: 1/2, 1 and 2 glasses.
+    function quickAmountsMl() as Array<Number> {
+        return [GLASS_ML / 2, GLASS_ML, GLASS_ML * 2];
+    }
+
+    // "3", "3.5" (half-glass steps).
+    function glasses(ml as Number) as String {
+        var halves = (ml * 2 + GLASS_ML / 2) / GLASS_ML;
+        return (halves % 2 == 0) ? (halves / 2).format("%d") : (halves / 2).format("%d") + ".5";
+    }
+
+    // A single drink: "1/2 glass", "1 glass", "2 glasses".
     function amount(ml as Number) as String {
-        return isOz() ? mlToOz(ml).format("%d") + " oz" : ml.format("%d") + " ml";
+        if (ml * 2 == GLASS_ML) {
+            return "1/2 glass";
+        }
+        var n = glasses(ml);
+        return n + (n.equals("1") ? " glass" : " glasses");
     }
 
-    // Just the number of a drink (for the quick-add circles): "250" / "8".
+    // Just the number, for the quick-add circles: "1/2", "1", "2".
     function amountNumber(ml as Number) as String {
-        return isOz() ? mlToOz(ml).format("%d") : ml.format("%d");
+        return ml * 2 == GLASS_ML ? "1/2" : glasses(ml);
     }
 
     function label() as String {
-        return isOz() ? "oz" : "ml";
+        return "glasses";
     }
 
-    // A total without unit: "1.2" (litres) / "41" (oz).
-    function totalNumber(ml as Number) as String {
-        return isOz() ? mlToOz(ml).format("%d") : (ml / 100 / 10.0).format("%.1f");
-    }
-
-    // A total with unit: "1.2 L" / "41 oz".
+    // A total: "9 glasses" ("1 glass").
     function total(ml as Number) as String {
-        return totalNumber(ml) + (isOz() ? " oz" : " L");
+        return amount(ml);
     }
 
-    // "1.2 / 2.0 L" / "41 / 68 oz".
+    // "3 / 9 glasses".
     function pair(ml as Number, goalMl as Number) as String {
-        return totalNumber(ml) + " / " + total(goalMl);
+        return glasses(ml) + " / " + glasses(goalMl) + " glasses";
     }
 }

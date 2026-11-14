@@ -21,8 +21,8 @@ module Autopilot {
     const STEP_MS = 1300;
 
     const STEPS = [
-        "first launch shows the name question",
-        "START opens the keyboard",
+        "first launch shows the name list",
+        "Type my own... opens the keyboard",
         "typing Coco moves on to the age question",
         "UP twice + START saves age, shows gender",
         "choosing Male finishes on the hamster",
@@ -35,7 +35,7 @@ module Autopilot {
         "Undo last removes 500 ml, back on hamster",
         "hold UP opens the menu",
         "Settings opens the settings submenu",
-        "Units switches to oz",
+        "Wake time steps forward an hour",
         "Back to hamster from a submenu",
         "hold UP opens the menu",
         "Places opens the places submenu",
@@ -59,7 +59,12 @@ module Autopilot {
         "hold UP opens the menu",
         "Reset today asks for confirmation",
         "Yes resets today, keeps name and hat",
-        "Back to hamster from the main menu"
+        "Back to hamster from the main menu",
+        "hold UP opens the menu",
+        "Hamster opens the hamster submenu",
+        "Rename shows the name list",
+        "picking Peanut renames, back to the hamster menu",
+        "Back to hamster from the hamster menu"
     ];
 
     var active as Boolean = false;
@@ -107,6 +112,16 @@ class AutopilotPlayer {
         if (ok) { _passed++; } else { _failed++; }
         _note = "";
 
+        // Stop at the first failure: the next inputs would go to the wrong
+        // screen (and could crash the app).
+        if (!ok) {
+            _timer.stop();
+            Autopilot.active = false;
+            System.println("AUTO STOPPED after step " + (_step + 1).format("%d") + ": passed="
+                           + _passed.format("%d") + " failed=" + _failed.format("%d"));
+            return;
+        }
+
         _step++;
         if (_step >= Autopilot.STEPS.size()) {
             _timer.stop();
@@ -146,6 +161,7 @@ class AutopilotPlayer {
         if (d instanceof SettingsMenuDelegate) { return "settings menu"; }
         if (d instanceof GenderDelegate) { return "gender"; }
         if (d instanceof NameKeyboardDelegate) { return "keyboard"; }
+        if (d instanceof NameMenuDelegate) { return "name list"; }
         if (d instanceof ResetConfirmDelegate) { return "reset confirm"; }
         return "other";
     }
@@ -199,7 +215,7 @@ class AutopilotPlayer {
                 Screen.page = Screen.PAGE_HOME;
                 Onboarding.start();
                 break;
-            case 1: (del() as NamePromptDelegate).onSelect(); break;
+            case 1: pick(:type); break;
             case 2:
                 (del() as NameKeyboardDelegate).onTextEntered("Coco", true);
                 WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);    // the keyboard closes itself
@@ -233,7 +249,10 @@ class AutopilotPlayer {
                 break;
             }
             case 13: pick(:settings); break;
-            case 14: pick(:units); break;
+            case 14:
+                _n = Prefs.wakeHour();
+                pick(:wake);
+                break;
             case 15: pick(:home); break;
             case 17: pick(:places); break;
             case 18: back(); break;
@@ -278,13 +297,18 @@ class AutopilotPlayer {
                 WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);    // the dialog closes itself
                 break;
             case 38: pick(:home); break;
+            case 39: main().onMenu(); break;
+            case 40: pick(:hamster); break;
+            case 41: pick(:rename); break;
+            case 42: pick(2); break;                     // "Peanut"
+            case 43: pick(:home); break;
         }
     }
 
     function check(i as Number) as Boolean {
         var d = del();
         switch (i) {
-            case 0: return want(top() instanceof NamePromptView, "name screen not shown");
+            case 0: return want(d instanceof NameMenuDelegate, "name list not shown");
             case 1: return want(d instanceof NameKeyboardDelegate, "keyboard not shown");
             case 2: return want(Prefs.name().equals("Coco"), "name is " + Prefs.name())
                          && want(top() instanceof AgeView, "age screen not shown");
@@ -306,7 +330,8 @@ class AutopilotPlayer {
             case 11: return want(WaterLog.getMl() == 250, "ml=" + WaterLog.getMl().format("%d"))
                           && want(onHamster(), "not back on hamster");
             case 13: return want(d instanceof SettingsMenuDelegate, "settings menu not shown");
-            case 14: return want(Units.isOz(), "units not oz")
+            case 14: return want(Prefs.wakeHour() == (_n >= Prefs.WAKE_MAX_HOUR ? Prefs.WAKE_MIN_HOUR : _n + 1),
+                                 "wake hour " + Prefs.wakeHour().format("%d"))
                           && want(d instanceof SettingsMenuDelegate, "left settings menu");
             case 15: return want(onHamster(), "not back on hamster");
             case 17: return want(d instanceof PlacesMenuDelegate, "places menu not shown");
@@ -337,6 +362,12 @@ class AutopilotPlayer {
                           && want(Rewards.wornHat() == HamsterArt.ACC_PARTY_HAT, "hat lost")
                           && want(d instanceof MainMenuDelegate, "not back on the menu");
             case 38: return want(onHamster(), "not back on hamster");
+            case 39: return want(d instanceof MainMenuDelegate, "main menu not shown");
+            case 40: return want(d instanceof HamsterMenuDelegate, "hamster menu not shown");
+            case 41: return want(d instanceof NameMenuDelegate, "name list not shown");
+            case 42: return want(Prefs.name().equals("Peanut"), "name is " + Prefs.name())
+                          && want(d instanceof HamsterMenuDelegate, "not back on the hamster menu");
+            case 43: return want(onHamster(), "not back on hamster");
         }
         return false;
     }
