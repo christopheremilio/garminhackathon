@@ -5,15 +5,18 @@
                     name="@Strings.AppName"
                     entry="HelloFenixApp"
                     launcherIcon="@Drawables.LauncherIcon"
-                    minApiLevel="3.1.0">
+                    minApiLevel="5.1.0">
 
         <!-- Only the Fenix 7 Pro is a build target for now. -->
         <iq:products>
             <iq:product id="fenix7pro"/>
         </iq:products>
 
-        <!-- No permissions are required by this starter app. -->
-        <iq:permissions/>
+        <!-- Background: periodic reminder check. Notifications: watch alerts (API 5.1+). -->
+        <iq:permissions>
+            <iq:uses-permission id="Background"/>
+            <iq:uses-permission id="Notifications"/>
+        </iq:permissions>
 
         <iq:languages>
             <iq:language>eng</iq:language>

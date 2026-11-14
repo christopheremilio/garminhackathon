@@ -1,30 +1,27 @@
-import Toybox.ActivityMonitor;
+import Toybox.Attention;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Timer;
 import Toybox.WatchUi;
 
-// Daily step tracker. Reads today's step count from ActivityMonitor
-// (Sensor.SensorData only exposes raw accel/gyro/HR/mag samples, not steps)
-// and draws progress toward a fixed 10,000-step goal.
+// Shows glasses drunk today as a segmented ring plus the time until the next
+// drink. Buzzes once if a drink becomes due while the app is open.
 class HelloFenixView extends WatchUi.View {
 
-    const STEP_GOAL = 10000;
-    const REFRESH_MS = 5000;
+    const REFRESH_MS = 30000;
 
     private var _timer as Timer.Timer?;
+    private var _buzzed as Boolean = false;
 
     function initialize() {
         View.initialize();
     }
 
-    // Start polling while the view is visible.
     function onShow() as Void {
         _timer = new Timer.Timer();
         _timer.start(method(:onTick), REFRESH_MS, true);
     }
 
-    // Stop polling when hidden to save battery.
     function onHide() as Void {
         if (_timer != null) {
             _timer.stop();
@@ -36,75 +33,83 @@ class HelloFenixView extends WatchUi.View {
         WatchUi.requestUpdate();
     }
 
-    // Steps since local midnight, or 0 if the device has no value yet.
-    private function getSteps() as Number {
-        var steps = ActivityMonitor.getInfo().steps;
-        return steps != null ? steps : 0;
-    }
-
     function onUpdate(dc as Dc) as Void {
         var width = dc.getWidth();
         var height = dc.getHeight();
         var cx = width / 2;
         var cy = height / 2;
 
-        var steps = getSteps();
-        var fraction = steps.toFloat() / STEP_GOAL;
-        var reached = steps >= STEP_GOAL;
-        var accent = reached ? Graphics.COLOR_GREEN : Graphics.COLOR_YELLOW;
+        var count = WaterLog.getCount();
+        var goal = WaterLog.GOAL_GLASSES;
+        var reached = count >= goal;
+        var due = WaterLog.isDue();
+        var accent = reached ? Graphics.COLOR_GREEN : Graphics.COLOR_BLUE;
+
+        // Buzz once each time a drink becomes due while we're on screen.
+        if (due && !_buzzed) {
+            _buzzed = true;
+            if (Attention has :vibrate) {
+                Attention.vibrate([new Attention.VibeProfile(75, 400)]);
+            }
+        } else if (!due) {
+            _buzzed = false;
+        }
 
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
 
-        // Progress ring: dark track, then the filled arc clockwise from 12 o'clock.
+        // Ring of `goal` segments, filled clockwise from 12 o'clock.
         var radius = (width < height ? width : height) / 2 - 10;
-        var penWidth = 12;
-        dc.setPenWidth(penWidth);
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawCircle(cx, cy, radius);
-
-        if (fraction > 0) {
-            dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
-            if (fraction >= 1.0) {
-                dc.drawCircle(cx, cy, radius);
-            } else {
-                var sweep = (fraction * 360).toNumber();
-                if (sweep < 1) {
-                    sweep = 1;
-                }
-                dc.drawArc(cx, cy, radius, Graphics.ARC_CLOCKWISE, 90, 90 - sweep);
-            }
+        var seg = 360 / goal;
+        var gap = 4;
+        dc.setPenWidth(12);
+        for (var i = 0; i < goal; i++) {
+            var start = 90 - i * seg - gap / 2;
+            var end = 90 - (i + 1) * seg + gap / 2;
+            dc.setColor(i < count ? accent : Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+            dc.drawArc(cx, cy, radius, Graphics.ARC_CLOCKWISE, start, end);
         }
         dc.setPenWidth(1);
 
         // Label
         dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, cy - 78, Graphics.FONT_SMALL,
-                    Rez.Strings.StepsLabel,
-                    Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, cy - 82, Graphics.FONT_SMALL,
+                    Rez.Strings.WaterLabel, Graphics.TEXT_JUSTIFY_CENTER);
 
-        // Step count
+        // Glasses count
         dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, cy - 30, Graphics.FONT_NUMBER_HOT,
-                    steps.format("%d"),
+        dc.drawText(cx, cy - 34, Graphics.FONT_NUMBER_HOT,
+                    count.format("%d") + "/" + goal.format("%d"),
                     Graphics.TEXT_JUSTIFY_CENTER);
 
-        // Goal / percent / remaining
-        var percent = (fraction * 100).toNumber();
-        var detail;
-        if (reached) {
-            detail = WatchUi.loadResource(Rez.Strings.GoalReached) as String;
-        } else {
-            detail = (STEP_GOAL - steps).format("%d") + " "
-                   + (WatchUi.loadResource(Rez.Strings.ToGo) as String);
-        }
+        // Volume
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, cy + 50, Graphics.FONT_TINY,
-                    percent.format("%d") + "% of 10,000",
+        dc.drawText(cx, cy + 42, Graphics.FONT_TINY,
+                    (count * WaterLog.GLASS_ML).format("%d") + " / "
+                        + (goal * WaterLog.GLASS_ML).format("%d") + " ml",
                     Graphics.TEXT_JUSTIFY_CENTER);
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, cy + 80, Graphics.FONT_XTINY,
-                    detail,
-                    Graphics.TEXT_JUSTIFY_CENTER);
+
+        // Status line
+        var status;
+        var statusColor = Graphics.COLOR_LT_GRAY;
+        if (reached) {
+            status = WatchUi.loadResource(Rez.Strings.GoalReached) as String;
+            statusColor = Graphics.COLOR_GREEN;
+        } else if (WaterLog.isQuietHours()) {
+            status = WatchUi.loadResource(Rez.Strings.QuietHours) as String;
+        } else if (due) {
+            status = WatchUi.loadResource(Rez.Strings.DrinkNow) as String;
+            statusColor = Graphics.COLOR_BLUE;
+        } else {
+            var mins = (WaterLog.secondsUntilDue() + 59) / 60;
+            status = Lang.format(WatchUi.loadResource(Rez.Strings.NextIn) as String, [mins]);
+        }
+        dc.setColor(statusColor, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx, cy + 72, Graphics.FONT_XTINY, status, Graphics.TEXT_JUSTIFY_CENTER);
+
+        // Button hint
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cx, cy + 96, Graphics.FONT_XTINY,
+                    Rez.Strings.Hint, Graphics.TEXT_JUSTIFY_CENTER);
     }
 }

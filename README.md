@@ -2,15 +2,29 @@
 
 A first Connect IQ "watch app" for the **Garmin fēnix® 7 Pro**, written in Monkey C.
 
-It tracks today's steps against a **10,000-step daily goal**:
+It's a **water drinking reminder**: log glasses through the day toward a goal of
+8 glasses (8 × 250 ml = 2 L), and get a watch notification when it's time to drink.
 
-- A progress ring around the edge fills clockwise (yellow, turning green at the goal).
-- The center shows the step count, percent of goal, and steps remaining.
-- The screen refreshes every 5 seconds while visible; START forces a refresh.
+| Button | Action |
+| ------ | ------ |
+| START  | +1 glass |
+| DOWN   | undo last glass |
+| BACK   | exit (reminders keep running) |
 
-Steps come from `ActivityMonitor.getInfo().steps` (steps since local midnight).
-`Sensor.SensorData` was considered but only exposes raw accelerometer, gyroscope,
-heart-rate and magnetometer samples. It has no step count.
+- A segmented ring fills one segment per glass (blue, turning green at the goal).
+- The center shows glasses, millilitres, and "Next drink in N min" / "Time to drink!".
+- **Reminders while the app is closed:** a background service checks every 15 min and
+  posts a notification ("Drink water", with a **+1 glass** action) when:
+  - 60 min have passed since your last glass,
+  - you're under today's goal,
+  - it's not quiet hours (21:00–08:00), and
+  - you weren't already reminded in the last 30 min.
+- Tapping **+1 glass** on the notification logs a glass (applied the next time the app runs).
+- If a drink becomes due while the app is open, the watch vibrates once.
+- The count resets at local midnight. State lives in `Application.Storage`.
+
+All the tunables (goal, glass size, interval, quiet hours, check period) are
+constants at the top of `source/WaterLog.mc`.
 
 ## Project layout
 
@@ -19,11 +33,13 @@ manifest.xml                    App id, type, target device, permissions
 monkey.jungle                   Build config: where source/resources live
 Makefile                        build / run / sim / clean helpers
 source/
-  HelloFenixApp.mc              AppBase subclass: lifecycle + initial view
-  HelloFenixView.mc             WatchUi.View: reads steps, draws ring + text
-  HelloFenixDelegate.mc         BehaviorDelegate: START = refresh
+  HelloFenixApp.mc              AppBase: registers background check, handles notification taps
+  HelloFenixView.mc             WatchUi.View: ring, counts, next-drink status
+  HelloFenixDelegate.mc         BehaviorDelegate: START +1, DOWN undo
+  WaterLog.mc                   (:background) shared state + reminder rules + settings
+  WaterServiceDelegate.mc       (:background) temporal event -> posts the notification
 resources/
-  strings/strings.xml           Localizable text (AppName, StepsLabel, ToGo, GoalReached)
+  strings/strings.xml           Localizable text (notification strings are scope="background")
   drawables/drawables.xml       Launcher icon declaration
   drawables/launcher_icon.svg   40x40 icon shown in the watch app list
 bin/                            Build output (git-ignored)
@@ -74,11 +90,13 @@ Only apps signed with your developer key will run; `make build` already signs wi
 
 - `manifest.xml` targets only `fenix7pro`. To support more devices add more
   `<iq:product id="..."/>` entries (in VS Code: *Monkey C: Edit Products*).
-- `minApiLevel="3.1.0"` keeps the app compatible with older CIQ versions while
-  still running on the fēnix 7 Pro (API 5.2).
+- `minApiLevel="5.1.0"` is required by `Toybox.Notifications`. The manifest requests the
+  `Background` and `Notifications` permissions.
+- Anything the background service touches (code *and* strings) must be marked for the
+  background: `(:background)` on code, `scope="background"` on strings. `make build`
+  uses strict type checking (`-l 3`) so mistakes here fail the build instead of crashing
+  on the watch.
 - `id` is a unique app UUID. Generate a new one if you clone this project.
-- The goal is the `STEP_GOAL` constant in `HelloFenixView.mc`. `ActivityMonitor.Info.stepGoal`
-  holds the user's own goal from Garmin Connect, if you'd rather use that.
 
 ## Good next steps
 

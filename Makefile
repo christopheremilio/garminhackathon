@@ -16,10 +16,11 @@ MONKEYDO := "$(SDK)/bin/monkeydo"
 
 all: build
 
-# Compile for the target device. -w shows warnings.
+# Compile for the target device. -w shows warnings, -l 3 = strict type checking
+# (catches background-scope mistakes the default level misses).
 build:
 	@mkdir -p $(BUILD)
-	$(MONKEYC) -f monkey.jungle -w -o $(BUILD)/$(APP).prg -d $(DEVICE) -y "$(KEY)"
+	$(MONKEYC) -f monkey.jungle -w -l 3 -o $(BUILD)/$(APP).prg -d $(DEVICE) -y "$(KEY)"
 
 # Build, then load the app into a running simulator.
 run: build

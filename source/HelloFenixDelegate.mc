@@ -9,8 +9,16 @@ class HelloFenixDelegate extends WatchUi.BehaviorDelegate {
         BehaviorDelegate.initialize();
     }
 
-    // START button: refresh the step count immediately.
+    // START: log a glass of water.
     function onSelect() as Boolean {
+        WaterLog.addGlass(null);
+        WatchUi.requestUpdate();
+        return true;
+    }
+
+    // DOWN: undo the last glass.
+    function onNextPage() as Boolean {
+        WaterLog.removeGlass();
         WatchUi.requestUpdate();
         return true;
     }
