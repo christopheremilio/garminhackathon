@@ -197,6 +197,19 @@ function testClockStart(logger as Logger) as Boolean {
 }
 
 (:test)
+function testForegroundFlag(logger as Logger) as Boolean {
+    tReset();
+    var ok = tCheck(logger, "closed by default", !WaterLog.foregroundActive());
+    WaterLog.markForeground(true);
+    ok = tCheck(logger, "open after marking", WaterLog.foregroundActive()) && ok;
+    WaterLog.markForeground(false);
+    ok = tCheck(logger, "closed after hiding", !WaterLog.foregroundActive()) && ok;
+    Storage.setValue(WaterLog.KEY_FG_UNTIL, WaterLog.nowSec() - 1);
+    ok = tCheck(logger, "stale mark expires", !WaterLog.foregroundActive()) && ok;
+    return ok;
+}
+
+(:test)
 function testMoodDropReminder(logger as Logger) as Boolean {
     tReset();
     var ok = tCheck(logger, "first thirsty -> remind", Reminders.moodDropped(Pet.MOOD_THIRSTY));

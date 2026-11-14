@@ -61,6 +61,7 @@ class HelloFenixView extends WatchUi.View {
             }
         }
         Screen.dirty = true;
+        WaterLog.markForeground(true);
         setPeriod(250);
         if (Places.anySaved() && !Places.FAKE_GPS) {
             Position.enableLocationEvents(Position.LOCATION_ONE_SHOT, method(:onPosition));
@@ -73,6 +74,7 @@ class HelloFenixView extends WatchUi.View {
             _timer = null;
         }
         _period = 0;
+        WaterLog.markForeground(false);
         Position.enableLocationEvents(Position.LOCATION_DISABLE, null);
     }
 
@@ -117,6 +119,7 @@ class HelloFenixView extends WatchUi.View {
 
     private function refreshState(now as Number) as Void {
         _stateAt = now;
+        WaterLog.markForeground(true);    // keep "app is open" fresh (see WaterLog)
         Screen.dirty = false;
         _ml = WaterLog.getMl();
         _goal = Hydration.goalMl();
@@ -314,6 +317,10 @@ class HelloFenixView extends WatchUi.View {
 
     // Urgent lines first; otherwise rotate through what's relevant.
     private function infoLine(now as Number) as String {
+        var b = Screen.bannerText;
+        if (b != null && now < Screen.bannerUntil) {
+            return b;
+        }
         if (_mood == Pet.MOOD_COLLAPSED) { return str(Rez.Strings.DrinkToRevive); }
         if (_mood == Pet.MOOD_LAST_WARNING) { return str(Rez.Strings.DrinkNowShort); }
         if (_mood == Pet.MOOD_SLEEPING) {

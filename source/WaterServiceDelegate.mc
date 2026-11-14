@@ -9,7 +9,8 @@ import Toybox.System;
 //   1. arrival at a saved place (needs a recent GPS fix)
 //   2. the hamster's mood dropped (to thirsty, crying or collapsed)
 //   3. the regular interval since your last drink is up
-// Nothing fires overnight, while snoozed, or more often than the cap.
+// Nothing fires overnight, while snoozed, while the app is open (it has its
+// own reminder screen), or more often than the cap.
 //
 // Toybox.Attention (tones/vibration) isn't available in the background, so
 // the notification's sound/vibe comes from the watch's own alert settings.
@@ -30,6 +31,13 @@ class WaterServiceDelegate extends System.ServiceDelegate {
         var interval = Hydration.intervalMin(exerting, place);
         var mood = Pet.currentMood();
         var dropped = Reminders.moodDropped(mood);   // always updates stored mood
+
+        // App is open: its own reminder screen handles this, so don't post a
+        // system notification over it.
+        if (WaterLog.foregroundActive()) {
+            Background.exit(null);
+            return;
+        }
         var quiet = WaterLog.isQuietHours() || WaterLog.isSnoozed();
 
         // 1. Arrival at a saved place.

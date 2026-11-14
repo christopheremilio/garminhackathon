@@ -1,4 +1,5 @@
 import Toybox.Lang;
+import Toybox.System;
 import Toybox.WatchUi;
 
 // Shared foreground UI state. The main screen caches its numbers between
@@ -18,6 +19,16 @@ module Screen {
     var reactAmount as Number = 0;     // ml shown as "+250" during a sip
     var page as Number = PAGE_HOME;
     var newItem as Number? = null;     // accessory unlocked by the last drink
+    var bannerText as String? = null;  // short in-app message on the info line
+    var bannerUntil as Number = 0;
+
+    // Show a short message on the home screen's info line for `ms`
+    // (in place of a system notification, which covers half the screen).
+    function banner(text as String, ms as Number) as Void {
+        bannerText = text;
+        bannerUntil = System.getTimer() + ms;
+        changed();
+    }
 
     function changed() as Void {
         dirty = true;

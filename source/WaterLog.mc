@@ -30,6 +30,8 @@ module WaterLog {
     const KEY_LAST_REMIND = "lastRemind";
     const KEY_SNOOZE_UNTIL = "snoozeUntil";
     const KEY_CLOCK_START = "clockStart";   // reminder countdown start (setup / reset)
+    const KEY_FG_UNTIL = "fgUntil";         // app counts as open until this time
+    const FOREGROUND_GRACE_SEC = 90;        // refreshed every 30 s while open
 
     function nowSec() as Number {
         return Time.now().value();
@@ -225,6 +227,19 @@ module WaterLog {
 
     function isDue(intervalMin as Number) as Boolean {
         return !goalReached() && !isQuietHours() && secondsUntilDue(intervalMin) == 0;
+    }
+
+    // The app marks itself open (refreshed every 30 s) or closed. While it's
+    // open the background posts no notifications: the in-app reminder covers
+    // it, and a system notification would cover half the screen. The mark
+    // expires on its own, so a crash can't silence reminders for long.
+    function markForeground(open as Boolean) as Void {
+        Storage.setValue(KEY_FG_UNTIL, open ? nowSec() + FOREGROUND_GRACE_SEC : 0);
+    }
+
+    function foregroundActive() as Boolean {
+        var until = getNumber(KEY_FG_UNTIL);
+        return until != null && nowSec() < until;
     }
 
     function snooze(fromSec as Number) as Void {

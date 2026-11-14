@@ -1,6 +1,5 @@
 import Toybox.Graphics;
 import Toybox.Lang;
-import Toybox.Notifications;
 import Toybox.System;
 import Toybox.Timer;
 import Toybox.WatchUi;
@@ -204,7 +203,9 @@ class DemoPlayer {
                 break;
             case 8: // 17:30 At the gym (arrival reminder)
                 Demo.place = Places.GYM;
-                showArrivalNotification();
+                Screen.banner(Lang.format(WatchUi.loadResource(Rez.Strings.ArriveBanner) as String,
+                                          [Units.amount(Hydration.GYM_DRINK_ML)]), 4000);
+                DrinkAlert.play();
                 break;
             case 9: // 17:45 Working hard (wheel)
                 Demo.exerting = true;
@@ -234,14 +235,4 @@ class DemoPlayer {
         }
     }
 
-    private function showArrivalNotification() as Void {
-        if (!(Toybox has :Notifications)) {
-            return;
-        }
-        var msg = Hydration.arrivalMessage(Places.GYM);
-        Notifications.showNotification(Rez.Strings.NotifyTitle, msg[0], {
-            :body => msg[1],
-            :dismissPrevious => true
-        });
-    }
 }

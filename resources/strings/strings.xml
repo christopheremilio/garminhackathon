@@ -136,4 +136,7 @@
     <string id="GoalDaysToGo">$1$ goal days to go</string>
     <string id="Wearing">Wearing</string>
     <string id="TapToWear">START: wear</string>
+
+    <!-- In-app arrival banner (demo) -->
+    <string id="ArriveBanner">Gym: drink $1$</string>
 </strings>
