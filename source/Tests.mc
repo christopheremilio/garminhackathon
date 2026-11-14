@@ -111,22 +111,6 @@ function testStreak(logger as Logger) as Boolean {
 }
 
 (:test)
-function testAddToYesterday(logger as Logger) as Boolean {
-    tReset();
-    tSetDay(1, 1800, 2000);
-    WaterLog.addToYesterday(250);
-    var r = WaterLog.dayRecord(WaterLog.daysAgo(1));
-    var ok = tCheck(logger, "yesterday 2050", r != null && r[0] == 2050 && r[1] == 2000);
-    ok = tCheck(logger, "yesterday now met", WaterLog.dayMet(WaterLog.daysAgo(1))) && ok;
-    ok = tCheck(logger, "today untouched", WaterLog.getMl() == 0) && ok;
-    tReset();
-    WaterLog.addToYesterday(300);
-    r = WaterLog.dayRecord(WaterLog.daysAgo(1));
-    ok = tCheck(logger, "no record yet -> created", r != null && r[0] == 300) && ok;
-    return ok;
-}
-
-(:test)
 function testRewards(logger as Logger) as Boolean {
     tReset();
     Storage.setValue(Rewards.KEY_GOAL_DAYS, 2);
@@ -209,23 +193,25 @@ function testForegroundFlag(logger as Logger) as Boolean {
 }
 
 (:test)
-function testStepsHabit(logger as Logger) as Boolean {
+function testStepsBonus(logger as Logger) as Boolean {
     tReset();
     Demo.active = true;
-    Demo.dayFrac = 0.5;
-    var g = Steps.goal();
-    Demo.steps = g / 2;
-    var ok = tCheck(logger, "on pace -> 100", Steps.petScore() == 100);
-    Demo.steps = g * 4 / 10;
-    ok = tCheck(logger, "10% behind -> 90", Steps.petScore() == 90) && ok;
+    Demo.bonusMl = 0;                      // no heart-rate bonus in this test
+    Demo.steps = 4000;
+    var ok = tCheck(logger, "4,000 steps -> no extra", Steps.bonusMl() == 0);
+    Demo.steps = 10000;
+    ok = tCheck(logger, "10,000 steps -> +1 glass", Steps.bonusMl() == 250) && ok;
+    Demo.steps = 16000;
+    ok = tCheck(logger, "16,000 steps -> +2 glasses", Steps.bonusMl() == 500) && ok;
+    Demo.steps = 30000;
+    ok = tCheck(logger, "30,000 steps -> capped at +3", Steps.bonusMl() == 750) && ok;
+    var base = Hydration.goalMl();
     Demo.steps = 0;
-    ok = tCheck(logger, "far behind floors at 50", Steps.petScore() == Steps.MIN_SCORE) && ok;
-    ok = tCheck(logger, "steps alone never worse than restless",
-                Pet.moodFor([100, Steps.petScore()], false, false) == Pet.MOOD_THIRSTY) && ok;
-    ok = tCheck(logger, "worst habit = steps", Pet.worstHabit([95, 50]) == Pet.HABIT_STEPS) && ok;
-    ok = tCheck(logger, "ties go to water", Pet.worstHabit([60, 60]) == Pet.HABIT_WATER) && ok;
-    Demo.steps = g;
-    ok = tCheck(logger, "goal met -> 100", Steps.petScore() == 100) && ok;
+    ok = tCheck(logger, "steps raise the goal", base == Hydration.goalMl() + 750) && ok;
+    Demo.bonusMl = 1400;
+    Demo.steps = 30000;
+    ok = tCheck(logger, "steps + heart rate capped together", Hydration.activityBonusMl() == Hydration.MAX_ACTIVITY_BONUS_ML) && ok;
+    ok = tCheck(logger, "steps never change the mood", Pet.scores().size() == 1) && ok;
     ok = tCheck(logger, "commas", Steps.withCommas(6214).equals("6,214") && Steps.withCommas(10005).equals("10,005")) && ok;
     tReset();
     return ok;
@@ -325,15 +311,27 @@ function testAgeGenderGoal(logger as Logger) as Boolean {
 }
 
 (:test)
+function testWeightAnswer(logger as Logger) as Boolean {
+    tReset();
+    Prefs.setWeightKg(80);
+    var ok = tCheck(logger, "answer overrides profile", Hydration.weightKg() == 80);
+    ok = tCheck(logger, "80 kg -> 2640 ml base", Hydration.baseMl() == 2640) && ok;
+    ok = tCheck(logger, "goal rounds up to 11 glasses", Hydration.goalMl() >= 2750) && ok;
+    Prefs.setWeightKg(500);
+    ok = tCheck(logger, "clamped to 250 kg", Prefs.savedWeightKg() == 250) && ok;
+    return ok;
+}
+
+(:test)
 function testNameAndPrefs(logger as Logger) as Boolean {
     tReset();
-    var ok = tCheck(logger, "default name Mizu", Prefs.name().equals("Mizu"));
+    var ok = tCheck(logger, "default name Coco", Prefs.name().equals("Coco"));
     Prefs.setName("  Coco  ");
     ok = tCheck(logger, "name trimmed", Prefs.name().equals("Coco")) && ok;
     Prefs.setName("Bartholomew the Great");
     ok = tCheck(logger, "name capped at 10", Prefs.name().length() == 10) && ok;
     Prefs.setName("   ");
-    ok = tCheck(logger, "blank -> Mizu", Prefs.name().equals("Mizu")) && ok;
+    ok = tCheck(logger, "blank -> Coco", Prefs.name().equals("Coco")) && ok;
     ok = tCheck(logger, "wake default 7", Prefs.wakeHour() == 7) && ok;
     Storage.setValue(Prefs.KEY_WAKE, 11);
     ok = tCheck(logger, "wake wraps 11 -> 4", Prefs.cycleWake() == 4) && ok;

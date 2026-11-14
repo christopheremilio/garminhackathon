@@ -12,7 +12,7 @@ import Toybox.UserProfile;
 (:background)
 module Prefs {
 
-    const DEFAULT_NAME = "Mizu";
+    const DEFAULT_NAME = "Coco";
     const MAX_NAME_LEN = 10;
     const DEFAULT_WAKE_HOUR = 7;
     const DEFAULT_BED_HOUR = 22;
@@ -28,6 +28,21 @@ module Prefs {
     const KEY_AGE = "age";
     const KEY_GENDER = "gender";
     const KEY_ONBOARDED = "onboarded";
+    const KEY_WEIGHT = "weightKg";
+
+    const MIN_WEIGHT_KG = 20;
+    const MAX_WEIGHT_KG = 250;
+    const DEFAULT_WEIGHT_KG = 70;
+
+    // Weight in kg the user entered, or null (then the Garmin profile is used).
+    function savedWeightKg() as Number? {
+        var v = Storage.getValue(KEY_WEIGHT);
+        return v instanceof Number ? v : null;
+    }
+
+    function setWeightKg(kg as Number) as Void {
+        Storage.setValue(KEY_WEIGHT, kg < MIN_WEIGHT_KG ? MIN_WEIGHT_KG : (kg > MAX_WEIGHT_KG ? MAX_WEIGHT_KG : kg));
+    }
 
     const MIN_AGE = 5;
     const MAX_AGE = 100;

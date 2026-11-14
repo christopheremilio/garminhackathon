@@ -7,12 +7,12 @@ import Toybox.WatchUi;
 // single press, or "Type my own..." for the watch keyboard.
 //
 //   First launch (question 1 of 3): the list replaces itself with the age
-//   question once a name is picked; BACK skips (keeps "Mizu").
+//   question once a name is picked; BACK skips (keeps "Coco").
 //   Rename (Hamster > Rename): same list with the current name on top;
 //   picking returns to the Hamster menu.
 module Names {
 
-    const SUGGESTED = ["Mizu", "Coco", "Peanut", "Mochi", "Biscuit",
+    const SUGGESTED = ["Coco", "Mizu", "Peanut", "Mochi", "Biscuit",
                        "Nibbles", "Pip", "Hazel", "Waffles", "Bubbles"];
 
     var entered as Boolean = false;     // set when the keyboard saves a name

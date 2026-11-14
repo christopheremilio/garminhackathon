@@ -1,4 +1,4 @@
-# Hamster water pet for Garmin fēnix 7 Pro
+# Hydro Habit
 
 A little hamster lives on your watch, and it needs you to drink water. Keep up with your
 daily goal and it stays happy and bouncy. Fall behind and it gets thirsty, starts crying,
@@ -8,7 +8,7 @@ Your goal is based on your body weight and grows when you're active. Reminders c
 often when you're working hard or at the gym. Meeting your goal day after day builds a
 streak, earns badges, and unlocks accessories to dress your hamster in.
 
-On the watch the app is currently listed as **Water Reminder**.
+The app is called **Hydro Habit**. Coco is the hamster (you can rename it).
 
 > This app gives general guidance only. It isn't medical advice. If you have a health
 > condition that affects how much you should drink, follow your doctor's advice.
@@ -25,28 +25,30 @@ The app isn't in the Connect IQ Store yet. To put it on your watch:
 3. Open the **GARMIN** drive that appears and copy `HelloFenix.prg` into the
    **GARMIN/APPS** folder.
 4. Eject the watch and unplug it.
-5. On the watch, press **START** from the watch face, scroll to **Water Reminder**, and
+5. On the watch, press **START** from the watch face, scroll to **Hydro Habit**, and
    press **START** to open it.
 
 The first time you open it, the watch may ask you to allow access to notifications,
 background updates, heart rate history, your user profile and GPS. Allow them all; the
 app needs each one for the features below.
 
-## First launch: three quick questions
+## First launch: four quick questions
 
-1. **Name your hamster.** Scroll the list of names (Mizu, Coco, Peanut, Mochi, Biscuit,
+1. **Name your hamster.** Scroll the list of names (Coco, Mizu, Peanut, Mochi, Biscuit,
    Nibbles, Pip, Hazel, Waffles, Bubbles) and press **START** on one. Or choose **Type my
    own...** to enter any name up to 10 letters on the watch keyboard. **BACK** keeps
-   **Mizu**.
+   **Coco**.
 2. **How old are you?** **UP/DOWN** changes the number and **START** confirms.
 3. **You are:** Female, Male, Other, or Prefer not to say.
+4. **Your weight?** **UP/DOWN** changes it in kg and **START** confirms. Your daily goal is
+   based on it (about 33 ml per kg, rounded up to whole glasses).
 
-Age and gender start from your Garmin profile if it has them, so usually you just confirm.
-**BACK** skips any question. You can change all three later: rename from the **Hamster**
-menu (same list, or type your own), and age and gender from **Settings**.
+Age, gender and weight start from your Garmin profile if it has them, so usually you just confirm.
+**BACK** skips any question. You can change them all later: rename from the **Hamster**
+menu (same list, or type your own), and age, gender and weight from **Settings**.
 
 **What they're used for:**
-- Your **weight** (from Garmin Connect) sets your goal when it's available.
+- Your **weight** sets your goal (your answer, or the Garmin Connect profile).
 - Without a weight, **gender** sets the starting goal: 10 glasses male, 8 female, 9
   otherwise.
 - **Under 14**, the goal is capped at about 7 glasses.
@@ -58,8 +60,8 @@ menu (same list, or type your own), and age and gender from **Settings**.
 - **Set your wake and bed times:** hold UP → **Settings** → **Wake time** / **Bed time**
   (press to step through the hours). They default to 7:00 and 22:00. Your hamster sleeps, and reminders
   pause, outside these hours.
-- **Enter your weight** in your user profile in the Garmin Connect phone app, then sync your
-  watch. Your daily goal is based on it.
+- **Check your weight** (asked at setup, or under **Settings** → **Weight**). Your daily goal
+  is based on it.
 - **Check your heart rate zones** in Garmin Connect. The app uses them to tell when you're
   working hard.
 - **Turn on watch tones** in the watch's system sound settings if you want to hear the bell
@@ -139,10 +141,10 @@ Press **UP/DOWN** to move between the four pages: **Home → Weekly → Closet �
 
 ```
 Menu
-  Add water           1/2, 1 or 2 glasses, Undo last, Add to yesterday
+  Add water           1/2, 1 or 2 glasses, Undo last
   Hamster        >    Rename hamster, Dress up
   Places         >    Save as Home / Gym / Work / Other, Forget places
-  Settings       >    Wake time, Bed time, Age, Gender
+  Settings       >    Wake time, Bed time, Age, Gender, Weight
   Reset today
   Back to hamster
 ```
@@ -155,8 +157,6 @@ straight back to your hamster.
 - Adding water, dressing up and saving a place also finish on the hamster.
 
 **On the Add water screen:** UP/DOWN moves the highlight, START picks, and BACK closes.
-Choose **Add to yesterday** first to switch the amounts to yesterday, if you forgot to log
-a drink. Yesterday stays editable all of today.
 
 ---
 
@@ -192,21 +192,17 @@ notification with **+250** and **Snooze** buttons:
 | What | How it affects your goal |
 |---|---|
 | **Your weight** | About 33 ml per kg, rounded up to whole glasses (70 kg means about 10 glasses). Between 6 and 14 glasses. |
-| **Intensity minutes** | Activity adds water: about 1 extra glass per 25 moderate minutes or 17 vigorous minutes, up to 6 extra glasses a day. |
+| **Steps** | +1 glass for every 5,000 steps beyond your first 5,000 (10,000 steps = +1, 15,000 = +2, 20,000+ = +3). |
+| **Heart rate** (intensity minutes) | Garmin measures intensity minutes from your heart rate: about 1 extra glass per 25 moderate or 17 vigorous minutes. Steps and heart rate together add at most 6 glasses a day. |
 | **Hot weather** | When it feels 25 °C or hotter (using the weather your phone sends to the watch): +1 glass. At 30 °C or hotter: +2 glasses. No weather data, no change. |
 
 Your goal can grow during the day as you move. It never goes down during the day.
 
-## Steps: Coco's energy
+## Steps
 
-Coco also runs on your **steps**. Your goal is your Garmin daily step goal (10,000 if none
-is set), and like water it's compared with where you'd expect to be by this time of day.
-
-- Fall behind on steps and Coco gets **restless: "Coco wants a walk"**. The info line
-  shows how many steps to go.
-- Steps are gentler than water: they can make Coco restless, but **never make it cry or
-  faint**. Those are for water only.
-- The info line rotates in your count, for example **6,214 / 10,000 steps**.
+The home screen shows **how many steps you've done today** ("6,214 steps today"). The app
+doesn't push you to walk more. Steps just raise your water goal, because walking all day
+means you need more water (see [How your goal is set](#how-your-goal-is-set)).
 
 ## After a workout
 
@@ -337,8 +333,8 @@ rate, so the [working hard](#when-youre-working-hard) reminders still kick in.
 | Sensor / data | What the app uses it for |
 |---|---|
 | **Heart rate** (recent history) | Spotting when you're working hard (mostly zone 3 or higher for 30 min): more frequent reminders and the hamster wheel |
-| **Activity tracking:** steps and step goal | Coco's energy (the steps habit) |
-| **Activity tracking:** intensity minutes | Extra water on active days |
+| **Activity tracking:** steps | Your step count, and extra water for busy days |
+| **Activity tracking:** intensity minutes (from heart rate) | Extra water on active days |
 | **Recorded workouts** | The post-workout nudge when a workout ends |
 | **GPS** | Saving places, and knowing when you're at the gym, home or work |
 | **Weather** (from your phone) | Extra water on hot days ("feels like" temperature) |
@@ -376,4 +372,3 @@ Everything stays on your watch. Nothing is uploaded.
 | It never says "At Gym" | Re-save the place outdoors, and open the app when you arrive. |
 | **No GPS fix** when saving | Go outside or near a window and try again. |
 | I logged too much | Hold UP → **Add water** → **Undo last**. |
-| I forgot to log a drink yesterday | Hold UP → **Add water** → **Add to yesterday**, then pick the amount. |

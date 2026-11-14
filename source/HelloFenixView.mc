@@ -40,9 +40,7 @@ class HelloFenixView extends WatchUi.View {
     private var _drinkMl as Number? = null;
     private var _due as Boolean = false;
     private var _mood as Number = Pet.MOOD_ON_TRACK;
-    private var _worst as Number = Pet.HABIT_WATER;   // habit Coco needs most
     private var _steps as Number = 0;
-    private var _stepGoal as Number = 10000;
     private var _heatMl as Number = 0;
     private var _feelsC as Number? = null;
     private var _workout as Boolean = false;
@@ -144,10 +142,8 @@ class HelloFenixView extends WatchUi.View {
         _drinkMl = Hydration.suggestedDrinkMl(_exerting, _place);
         _due = WaterLog.isDue(_interval);
         var scores = Pet.scores();
-        _worst = Pet.worstHabit(scores);
         _mood = Pet.moodFor(scores, _ml >= _goal && Pet.worstScore(scores) >= Pet.ON_TRACK_MIN, Prefs.isNight());
         _steps = Steps.count();
-        _stepGoal = Steps.goal();
         _heatMl = Hydration.heatBonusMl();
         _feelsC = Hydration.feelsLikeC();
         _workout = Hydration.justWorkedOut();
@@ -385,9 +381,7 @@ class HelloFenixView extends WatchUi.View {
     }
 
     private function titleFor(mood as Number) as String {
-        if (mood == Pet.MOOD_THIRSTY) {
-            return fmt(_worst == Pet.HABIT_STEPS ? Rez.Strings.TitleWalk : Rez.Strings.TitleThirsty, [_name]);
-        }
+        if (mood == Pet.MOOD_THIRSTY) { return fmt(Rez.Strings.TitleThirsty, [_name]); }
         if (mood == Pet.MOOD_LAST_WARNING) { return fmt(Rez.Strings.TitleCryingHome, [_name]); }
         if (mood == Pet.MOOD_COLLAPSED) { return fmt(Rez.Strings.TitleCollapsed, [_name]); }
         if (mood == Pet.MOOD_SLEEPING) { return fmt(Rez.Strings.TitleAsleep, [_name]); }
@@ -411,9 +405,6 @@ class HelloFenixView extends WatchUi.View {
         if (_due) {
             return _drinkMl != null ? fmt(Rez.Strings.DrinkNowExertion, [Units.amount(_drinkMl as Number)]) : str(Rez.Strings.DrinkNow);
         }
-        if (_mood == Pet.MOOD_THIRSTY && _worst == Pet.HABIT_STEPS) {
-            return fmt(Rez.Strings.StepsToGo, [Steps.withCommas(_stepGoal - _steps)]);
-        }
         var lines = [] as Array<String>;
         if (_ml >= _goal) {
             lines.add(str(Rez.Strings.GoalMet));
@@ -430,7 +421,7 @@ class HelloFenixView extends WatchUi.View {
         if (_bonus > 0) {
             lines.add(fmt(Rez.Strings.ActivityBonus, [Units.total(_bonus)]));
         }
-        lines.add(fmt(Rez.Strings.StepsLine, [Steps.withCommas(_steps), Steps.withCommas(_stepGoal)]));
+        lines.add(fmt(Rez.Strings.StepsLine, [Steps.withCommas(_steps)]));
         if (_streak > 0) {
             lines.add(fmt(Rez.Strings.StreakDays, [_streak]));
         }

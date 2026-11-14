@@ -4,10 +4,10 @@ import Toybox.WatchUi;
 // Hold-UP menu, organised into submenus:
 //
 //   Menu
-//     Add water          -> quick-add screen (150/250/500, undo, yesterday)
+//     Add water          -> quick-add screen (1/2, 1, 2 glasses, undo)
 //     Hamster    >       Rename, Dress up
 //     Places     >       Save as Home / Gym / Work / Other, Forget places
-//     Settings   >       Wake time, Bed time, Age, Gender
+//     Settings   >       Wake time, Bed time, Age, Gender, Weight
 //     Reset today
 //     Back to hamster
 //
@@ -83,6 +83,7 @@ module Menus {
         m.addItem(item(Rez.Strings.BedTime, Prefs.hourLabel(Prefs.bedHour()), :bed));
         m.addItem(item(Rez.Strings.AgeItem, Onboarding.ageLabel(), :age));
         m.addItem(item(Rez.Strings.GenderItem, Onboarding.genderLabel(Prefs.gender()), :gender));
+        m.addItem(item(Rez.Strings.WeightItem, Onboarding.weightLabel(), :weight));
         m.addItem(backItem());
         return m;
     }
@@ -207,6 +208,10 @@ class SettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
             return;
         } else if (id == :gender) {
             Onboarding.genderMenu(false, item);
+            return;
+        } else if (id == :weight) {
+            var wv = new WeightView(false, item);
+            WatchUi.pushView(wv, new WeightDelegate(wv), WatchUi.SLIDE_LEFT);
             return;
         } else if (id == :home) {
             Menus.home();

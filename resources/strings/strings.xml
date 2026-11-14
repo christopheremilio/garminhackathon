@@ -1,5 +1,5 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
-    <string id="AppName">Water Reminder</string>
+    <string id="AppName">Hydro Habit</string>
     <string id="DrinkNow">Time to drink!</string>
     <string id="NextIn">Next drink in $1$ min</string>
     <string id="DrinkNowExertion">Drink $1$ now!</string>
@@ -59,11 +59,8 @@
 
     <!-- Quick add -->
     <string id="AddWaterTitle">Add water</string>
-    <string id="AddWaterSub">Other amounts, undo</string>
-    <string id="AddYesterdayTitle">Add to yesterday</string>
+    <string id="AddWaterSub">Half, 1, 2 glasses, undo</string>
     <string id="UndoLast">Undo last</string>
-    <string id="AddToYesterday">Add to yesterday</string>
-    <string id="AddToToday">Add to today</string>
 
     <!-- Name -->
     <string id="NameYourHamster">Name your hamster</string>
@@ -123,7 +120,7 @@
     <string id="AgeHint">UP/DOWN change, START ok</string>
     <string id="AgeItem">Age</string>
     <string id="GenderItem">Gender</string>
-    <string id="GenderQuestionStep">3 of 3: You are</string>
+    <string id="GenderQuestionStep">3 of 4: You are</string>
     <string id="GenderFemale">Female</string>
     <string id="GenderMale">Male</string>
     <string id="GenderOther">Other</string>
@@ -140,21 +137,22 @@
     <string id="ArriveBanner">Gym: drink $1$</string>
 
     <!-- Name list -->
-    <string id="NameStepTitle">1 of 3: Name</string>
+    <string id="NameStepTitle">1 of 4: Name</string>
     <string id="TypeMyOwn">Type my own...</string>
     <string id="CurrentName">Current</string>
 
     <!-- Steps habit, hot day, post-workout -->
-    <string id="StepsLine">$1$ / $2$ steps</string>
-    <string id="StepsToGo">$1$ steps to go</string>
+    <string id="StepsLine">$1$ steps today</string>
     <string id="HeatLine">Hot day ($1$C): +$2$</string>
     <string id="PostWorkout">Post-workout: drink $1$</string>
-    <string id="TitleWalk" scope="background">$1$ wants a walk</string>
-    <string id="WalkBody" scope="background">Time to stretch your legs</string>
     <string id="WorkoutTitle" scope="background">Great workout!</string>
     <string id="WorkoutBody" scope="background">Drink $1$ to recover.</string>
 
     <!-- Coco walks off after a lapsed streak -->
     <string id="TitleLeft" scope="background">$1$ left</string>
     <string id="BringBack" scope="background">Drink to bring $1$ back</string>
+
+    <!-- Weight question -->
+    <string id="WeightQuestion">Your weight?</string>
+    <string id="WeightItem">Weight</string>
 </strings>

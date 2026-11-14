@@ -116,24 +116,19 @@ module Pet {
         return worst;
     }
 
-    // Habits feeding the pet (index into scores()).
+    // Habits feeding the pet (index into scores()). Water is the only one;
+    // steps, heart rate and heat adjust the water goal instead.
     enum {
-        HABIT_WATER,
-        HABIT_STEPS
+        HABIT_WATER
     }
 
     // Every habit's score, in HABIT_* order.
     function scores() as Array<Number> {
-        return [Hydration.petScore(WaterLog.getMl(), Hydration.goalMl()), Steps.petScore()];
-    }
-
-    // The habit Coco needs most right now (water wins ties).
-    function worstHabit(s as Array<Number>) as Number {
-        return s[HABIT_STEPS] < s[HABIT_WATER] ? HABIT_STEPS : HABIT_WATER;
+        return [Hydration.petScore(WaterLog.getMl(), Hydration.goalMl())];
     }
 
     // Hydrated (the happiest look) once today's water goal is met and no
-    // other habit is falling behind.
+    // habit is falling behind.
     function currentMood() as Number {
         if (isAway()) {
             return MOOD_AWAY;

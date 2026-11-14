@@ -5,7 +5,7 @@ import Toybox.WatchUi;
 //   START    add 250 ml (the hamster sips / revives / celebrates);
 //            on the Closet page, open the closet to dress up
 //   UP/DOWN  switch page: Home, Weekly, Closet, Badges
-//   Hold UP  menu: add water (other amounts, undo, yesterday), rename,
+//   Hold UP  menu: add water (other amounts, undo), rename,
 //            wake/bed times, places, reset
 //   BACK     exit (reminders keep running)
 // Any button stops the demo tour first.

@@ -25,13 +25,6 @@ module Actions {
         }
     }
 
-    function logYesterday(ml as Number) as Void {
-        WaterLog.addToYesterday(ml);
-        Rewards.checkDay(WaterLog.daysAgo(1));
-        Screen.reactAmount = ml;
-        Screen.react(HamsterArt.REACT_SIP);
-    }
-
     function undo() as Void {
         WaterLog.undoLast();
         Screen.react(HamsterArt.REACT_TILT);

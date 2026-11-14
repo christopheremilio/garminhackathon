@@ -31,9 +31,10 @@ module Autopilot {
     const STEPS = [
         "first launch shows the name list",
         "Type my own... opens the keyboard",
-        "typing Coco moves on to the age question",
+        "typing Mochi moves on to the age question",
         "UP twice + START saves age, shows gender",
-        "choosing Male finishes on the hamster",
+        "choosing Male moves on to the weight question",
+        "UP + START saves weight, finishes on the hamster",
         "START adds 250 ml",
         "hold UP opens the menu",
         "Add water opens quick add",
@@ -71,7 +72,7 @@ module Autopilot {
         "hold UP opens the menu",
         "Hamster opens the hamster submenu",
         "Rename shows the name list",
-        "picking Peanut renames, back to the hamster menu",
+        "picking Coco renames, back to the hamster menu",
         "Back to hamster from the hamster menu",
         "4 missed days: Coco walks off",
         "START: Coco walks back in"
@@ -164,6 +165,7 @@ class AutopilotPlayer {
         if (v instanceof ReminderView) { return "reminder"; }
         if (v instanceof NamePromptView) { return "name"; }
         if (v instanceof AgeView) { return "age"; }
+        if (v instanceof WeightView) { return "weight"; }
         var d = del();
         if (d instanceof MainMenuDelegate) { return "main menu"; }
         if (d instanceof HamsterMenuDelegate) { return "hamster menu"; }
@@ -227,7 +229,7 @@ class AutopilotPlayer {
                 break;
             case 1: pick(:type); break;
             case 2:
-                (del() as NameKeyboardDelegate).onTextEntered("Coco", true);
+                (del() as NameKeyboardDelegate).onTextEntered("Mochi", true);
                 WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);    // the keyboard closes itself
                 break;
             case 3: {
@@ -240,79 +242,86 @@ class AutopilotPlayer {
                 break;
             }
             case 4: pick(Prefs.GENDER_MALE); break;
-            case 5: main().onSelect(); break;
-            case 6: case 9: case 12: case 16: case 20: case 35:
+            case 5: {
+                _n = (top() as WeightView).kg;
+                var wd = del() as WeightDelegate;
+                wd.onPreviousPage();
+                wd.onSelect();
+                break;
+            }
+            case 6: main().onSelect(); break;
+            case 7: case 10: case 13: case 17: case 21: case 36:
                 main().onMenu();
                 break;
-            case 7: case 10: pick(:add); break;
-            case 8: {
+            case 8: case 11: pick(:add); break;
+            case 9: {
                 var d = del() as QuickAddDelegate;
                 d.onNextPage();          // 250 -> 500
                 d.onSelect();
                 break;
             }
-            case 11: {
+            case 12: {
                 var d = del() as QuickAddDelegate;
                 d.onNextPage();          // 250 -> 500
                 d.onNextPage();          // -> Undo last
                 d.onSelect();
                 break;
             }
-            case 13: pick(:settings); break;
-            case 14:
+            case 14: pick(:settings); break;
+            case 15:
                 _n = Prefs.wakeHour();
                 pick(:wake);
                 break;
-            case 15: pick(:home); break;
-            case 17: pick(:places); break;
-            case 18: back(); break;
+            case 16: pick(:home); break;
+            case 18: pick(:places); break;
             case 19: back(); break;
-            case 21: pick(:hamster); break;
-            case 22: pick(:closet); break;
-            case 23:
+            case 20: back(); break;
+            case 22: pick(:hamster); break;
+            case 23: pick(:closet); break;
+            case 24:
                 _n = (top() as ClosetView).item;
                 (del() as ClosetDelegate).swipe(WatchUi.SWIPE_LEFT);
                 break;
-            case 24:
+            case 25:
                 _n = (top() as ClosetView).item;
                 (del() as ClosetDelegate).tapAt(220);
                 break;
-            case 25:
+            case 26:
                 _n = (top() as ClosetView).item;
                 (del() as ClosetDelegate).tapAt(130);
                 break;
-            case 26:
+            case 27:
                 _n = (top() as ClosetView).item;
                 (del() as ClosetDelegate).swipe(WatchUi.SWIPE_RIGHT);
                 break;
-            case 27: back(); break;
-            case 28:
+            case 28: back(); break;
+            case 29:
                 Storage.setValue(Rewards.KEY_GOAL_DAYS, 6);   // 2 items unlocked
                 Screen.page = Screen.PAGE_CLOSET;
                 main().tap();
                 break;
-            case 29: (del() as ClosetDelegate).onSelect(); break;
-            case 30: back(); break;
-            case 31: main().onNextPage(); break;
+            case 30: (del() as ClosetDelegate).onSelect(); break;
+            case 31: back(); break;
             case 32: main().onNextPage(); break;
-            case 33:
+            case 33: main().onNextPage(); break;
+            case 34:
                 WaterLog.backdateLastDrink(2 * 3600);
                 Storage.deleteValue(WaterLog.KEY_CLOCK_START);
                 Screen.changed();
                 break;
-            case 34: (del() as ReminderDelegate).onNextPage(); break;
-            case 36: pick(:reset); break;
-            case 37:
+            case 35: (del() as ReminderDelegate).onNextPage(); break;
+            case 37: pick(:reset); break;
+            case 38:
                 (del() as ResetConfirmDelegate).onResponse(WatchUi.CONFIRM_YES);
                 WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);    // the dialog closes itself
                 break;
-            case 38: pick(:home); break;
-            case 39: main().onMenu(); break;
-            case 40: pick(:hamster); break;
-            case 41: pick(:rename); break;
-            case 42: pick(2); break;                     // "Peanut"
-            case 43: pick(:home); break;
-            case 44: {
+            case 39: pick(:home); break;
+            case 40: main().onMenu(); break;
+            case 41: pick(:hamster); break;
+            case 42: pick(:rename); break;
+            case 43: pick(0); break;                     // "Coco"
+            case 44: pick(:home); break;
+            case 45: {
                 Storage.setValue(Pet.KEY_FIRST_DAY, WaterLog.daysAgo(20));
                 Storage.deleteValue(Pet.KEY_RETURNED_DAY);
                 var h = WaterLog.history();
@@ -323,7 +332,7 @@ class AutopilotPlayer {
                 Screen.changed();
                 break;
             }
-            case 45: main().onSelect(); break;
+            case 46: main().onSelect(); break;
         }
     }
 
@@ -332,7 +341,7 @@ class AutopilotPlayer {
         switch (i) {
             case 0: return want(d instanceof NameMenuDelegate, "name list not shown");
             case 1: return want(d instanceof NameKeyboardDelegate, "keyboard not shown");
-            case 2: return want(Prefs.name().equals("Coco"), "name is " + Prefs.name())
+            case 2: return want(Prefs.name().equals("Mochi"), "name is " + Prefs.name())
                          && want(top() instanceof AgeView, "age screen not shown");
             case 3: {
                 var a = Prefs.age();
@@ -341,59 +350,64 @@ class AutopilotPlayer {
                     && want(d instanceof GenderDelegate, "gender menu not shown");
             }
             case 4: return want(Prefs.gender() == Prefs.GENDER_MALE, "gender not saved")
-                         && want(Prefs.onboarded(), "not marked onboarded")
-                         && want(onHamster(), "not back on hamster");
-            case 5: return want(WaterLog.getMl() == 250, "ml=" + WaterLog.getMl().format("%d"));
-            case 6: case 9: case 12: case 16: case 20: case 35:
+                         && want(top() instanceof WeightView, "weight question not shown");
+            case 5: {
+                var w = Prefs.savedWeightKg();
+                return want(w != null && w == _n + 1, "weight not saved")
+                    && want(Prefs.onboarded(), "not marked onboarded")
+                    && want(onHamster(), "not back on hamster");
+            }
+            case 6: return want(WaterLog.getMl() == 250, "ml=" + WaterLog.getMl().format("%d"));
+            case 7: case 10: case 13: case 17: case 21: case 36:
                 return want(d instanceof MainMenuDelegate, "main menu not shown");
-            case 7: case 10: return want(top() instanceof QuickAddView, "quick add not shown");
-            case 8: return want(WaterLog.getMl() == 750, "ml=" + WaterLog.getMl().format("%d"))
+            case 8: case 11: return want(top() instanceof QuickAddView, "quick add not shown");
+            case 9: return want(WaterLog.getMl() == 750, "ml=" + WaterLog.getMl().format("%d"))
                          && want(onHamster(), "not back on hamster");
-            case 11: return want(WaterLog.getMl() == 250, "ml=" + WaterLog.getMl().format("%d"))
+            case 12: return want(WaterLog.getMl() == 250, "ml=" + WaterLog.getMl().format("%d"))
                           && want(onHamster(), "not back on hamster");
-            case 13: return want(d instanceof SettingsMenuDelegate, "settings menu not shown");
-            case 14: return want(Prefs.wakeHour() == (_n >= Prefs.WAKE_MAX_HOUR ? Prefs.WAKE_MIN_HOUR : _n + 1),
+            case 14: return want(d instanceof SettingsMenuDelegate, "settings menu not shown");
+            case 15: return want(Prefs.wakeHour() == (_n >= Prefs.WAKE_MAX_HOUR ? Prefs.WAKE_MIN_HOUR : _n + 1),
                                  "wake hour " + Prefs.wakeHour().format("%d"))
                           && want(d instanceof SettingsMenuDelegate, "left settings menu");
-            case 15: return want(onHamster(), "not back on hamster");
-            case 17: return want(d instanceof PlacesMenuDelegate, "places menu not shown");
-            case 18: return want(d instanceof MainMenuDelegate, "not on main menu");
-            case 19: return want(onHamster(), "not back on hamster");
-            case 21: return want(d instanceof HamsterMenuDelegate, "hamster menu not shown");
-            case 22: return want(top() instanceof ClosetView, "closet not shown");
-            case 23: case 24:
+            case 16: return want(onHamster(), "not back on hamster");
+            case 18: return want(d instanceof PlacesMenuDelegate, "places menu not shown");
+            case 19: return want(d instanceof MainMenuDelegate, "not on main menu");
+            case 20: return want(onHamster(), "not back on hamster");
+            case 22: return want(d instanceof HamsterMenuDelegate, "hamster menu not shown");
+            case 23: return want(top() instanceof ClosetView, "closet not shown");
+            case 24: case 25:
                 return want((top() as ClosetView).item == _n % Rewards.ITEM_COUNT + 1, "item didn't advance");
-            case 25:
+            case 26:
                 return want(!Rewards.isWorn(_n), "wore a locked item")
                     && want(!Rewards.isUnlocked(_n), "item " + _n.format("%d") + " wasn't locked");
-            case 26:
+            case 27:
                 return want((top() as ClosetView).item == (_n + Rewards.ITEM_COUNT - 2) % Rewards.ITEM_COUNT + 1,
                             "item didn't go back");
-            case 27: return want(onHamster(), "not back on hamster");
-            case 28: return want(top() instanceof ClosetView, "closet not shown");
-            case 29: return want(Rewards.wornHat() == HamsterArt.ACC_PARTY_HAT, "party hat not worn");
-            case 30: return want(onHamster(), "not back on hamster");
-            case 31: return want(Screen.page == Screen.PAGE_BADGES, "page " + Screen.page.format("%d"));
-            case 32: return want(Screen.page == Screen.PAGE_HOME, "page " + Screen.page.format("%d"));
-            case 33: return want(top() instanceof ReminderView, "reminder not shown");
-            case 34: return want(WaterLog.isSnoozed(), "not snoozed")
+            case 28: return want(onHamster(), "not back on hamster");
+            case 29: return want(top() instanceof ClosetView, "closet not shown");
+            case 30: return want(Rewards.wornHat() == HamsterArt.ACC_PARTY_HAT, "party hat not worn");
+            case 31: return want(onHamster(), "not back on hamster");
+            case 32: return want(Screen.page == Screen.PAGE_BADGES, "page " + Screen.page.format("%d"));
+            case 33: return want(Screen.page == Screen.PAGE_HOME, "page " + Screen.page.format("%d"));
+            case 34: return want(top() instanceof ReminderView, "reminder not shown");
+            case 35: return want(WaterLog.isSnoozed(), "not snoozed")
                           && want(onHamster(), "not back on hamster");
-            case 36: return want(d instanceof ResetConfirmDelegate, "no confirmation");
-            case 37: return want(WaterLog.getMl() == 0, "ml=" + WaterLog.getMl().format("%d"))
-                          && want(Prefs.name().equals("Coco"), "name lost")
+            case 37: return want(d instanceof ResetConfirmDelegate, "no confirmation");
+            case 38: return want(WaterLog.getMl() == 0, "ml=" + WaterLog.getMl().format("%d"))
+                          && want(Prefs.name().equals("Mochi"), "name lost")
                           && want(Rewards.wornHat() == HamsterArt.ACC_PARTY_HAT, "hat lost")
                           && want(d instanceof MainMenuDelegate, "not back on the menu");
-            case 38: return want(onHamster(), "not back on hamster");
-            case 39: return want(d instanceof MainMenuDelegate, "main menu not shown");
-            case 40: return want(d instanceof HamsterMenuDelegate, "hamster menu not shown");
-            case 41: return want(d instanceof NameMenuDelegate, "name list not shown");
-            case 42: return want(Prefs.name().equals("Peanut"), "name is " + Prefs.name())
+            case 39: return want(onHamster(), "not back on hamster");
+            case 40: return want(d instanceof MainMenuDelegate, "main menu not shown");
+            case 41: return want(d instanceof HamsterMenuDelegate, "hamster menu not shown");
+            case 42: return want(d instanceof NameMenuDelegate, "name list not shown");
+            case 43: return want(Prefs.name().equals("Coco"), "name is " + Prefs.name())
                           && want(d instanceof HamsterMenuDelegate, "not back on the hamster menu");
-            case 43: return want(onHamster(), "not back on hamster");
-            case 44: return want(Pet.isAway(), "not away")
+            case 44: return want(onHamster(), "not back on hamster");
+            case 45: return want(Pet.isAway(), "not away")
                           && want(Pet.currentMood() == Pet.MOOD_AWAY, "mood not away")
                           && want(onHamster(), "not on hamster screen");
-            case 45: return want(!Pet.isAway(), "still away")
+            case 46: return want(!Pet.isAway(), "still away")
                           && want(onHamster(), "not on hamster screen");
         }
         return false;

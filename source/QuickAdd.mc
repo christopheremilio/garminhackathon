@@ -2,14 +2,14 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-// "Add water" screen from the design: three preset amounts, Undo last, and
-// a toggle to add to yesterday instead of today. UP/DOWN move the
-// highlight, START picks, BACK closes.
+// "Add water" screen from the design: three preset amounts (1/2, 1 and 2
+// glasses) and Undo last. UP/DOWN move the highlight, START picks, BACK
+// closes.
+const QUICK_ADD_CHOICES = 4;        // 0-2 = amounts, 3 = undo
+
 class QuickAddView extends WatchUi.View {
 
-    // 0-2 = amounts, 3 = undo, 4 = today/yesterday toggle
     var selected as Number = 1;
-    var yesterday as Boolean = false;
 
     function initialize() {
         View.initialize();
@@ -18,29 +18,26 @@ class QuickAddView extends WatchUi.View {
     function onUpdate(dc as Dc) as Void {
         dc.setColor(Scenes.BLACK, Scenes.BLACK);
         dc.clear();
-        var title = yesterday ? Rez.Strings.AddYesterdayTitle : Rez.Strings.AddWaterTitle;
-        Scenes.txt(dc, 130, 44, Graphics.FONT_TINY, WatchUi.loadResource(title) as String, Scenes.WHITE);
+        Scenes.txt(dc, 130, 52, Graphics.FONT_TINY,
+                   WatchUi.loadResource(Rez.Strings.AddWaterTitle) as String, Scenes.WHITE);
 
         var amounts = Units.quickAmountsMl();
         for (var i = 0; i < amounts.size(); i++) {
             var cx = 62 + i * 68;
             if (i == selected) {
                 dc.setColor(Scenes.WHITE, Graphics.COLOR_TRANSPARENT);
-                dc.fillCircle(cx, 112, 34);
+                dc.fillCircle(cx, 120, 34);
             }
             dc.setColor(Scenes.BLUE, Graphics.COLOR_TRANSPARENT);
-            dc.fillCircle(cx, 112, 31);
+            dc.fillCircle(cx, 120, 31);
             dc.setColor(Scenes.DBLUE, Graphics.COLOR_TRANSPARENT);
-            dc.fillCircle(cx, 112, 27);
-            Scenes.txt(dc, cx, 112, Graphics.FONT_XTINY, Units.amountNumber(amounts[i]), Scenes.WHITE);
+            dc.fillCircle(cx, 120, 27);
+            Scenes.txt(dc, cx, 120, Graphics.FONT_XTINY, Units.amountNumber(amounts[i]), Scenes.WHITE);
         }
-        Scenes.txt(dc, 130, 158, Graphics.FONT_XTINY, Units.label(), Scenes.GREY);
-        Scenes.txt(dc, 130, 192, Graphics.FONT_XTINY,
+        Scenes.txt(dc, 130, 166, Graphics.FONT_XTINY, Units.label(), Scenes.GREY);
+        Scenes.txt(dc, 130, 204, Graphics.FONT_XTINY,
                    WatchUi.loadResource(Rez.Strings.UndoLast) as String,
                    selected == 3 ? Scenes.BLUE : Scenes.WHITE);
-        Scenes.txt(dc, 130, 222, Graphics.FONT_XTINY,
-                   WatchUi.loadResource(yesterday ? Rez.Strings.AddToToday : Rez.Strings.AddToYesterday) as String,
-                   selected == 4 ? Scenes.BLUE : Scenes.WHITE);
     }
 }
 
@@ -54,33 +51,24 @@ class QuickAddDelegate extends WatchUi.BehaviorDelegate {
     }
 
     function onNextPage() as Boolean {
-        _view.selected = (_view.selected + 1) % 5;
+        _view.selected = (_view.selected + 1) % QUICK_ADD_CHOICES;
         WatchUi.requestUpdate();
         return true;
     }
 
     function onPreviousPage() as Boolean {
-        _view.selected = (_view.selected + 4) % 5;
+        _view.selected = (_view.selected + QUICK_ADD_CHOICES - 1) % QUICK_ADD_CHOICES;
         WatchUi.requestUpdate();
         return true;
     }
 
     function onSelect() as Boolean {
         var sel = _view.selected;
+        WatchUi.popView(WatchUi.SLIDE_DOWN);
         if (sel <= 2) {
-            var ml = Units.quickAmountsMl()[sel];
-            WatchUi.popView(WatchUi.SLIDE_DOWN);
-            if (_view.yesterday) {
-                Actions.logYesterday(ml);
-            } else {
-                Actions.logWater(ml);
-            }
-        } else if (sel == 3) {
-            WatchUi.popView(WatchUi.SLIDE_DOWN);
-            Actions.undo();
+            Actions.logWater(Units.quickAmountsMl()[sel]);
         } else {
-            _view.yesterday = !_view.yesterday;
-            WatchUi.requestUpdate();
+            Actions.undo();
         }
         return true;
     }

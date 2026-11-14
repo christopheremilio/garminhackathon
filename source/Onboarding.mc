@@ -4,11 +4,12 @@ import Toybox.System;
 import Toybox.WatchUi;
 
 // First-launch questions, one screen each, in the design's black style:
-//   1 of 3  Name your hamster   pick from a list or type (NamePrompt.mc)
-//   2 of 3  How old are you?    UP/DOWN change, START next
-//   3 of 3  You are...          Female / Male / Other / Prefer not to say
+//   1 of 4  Name your hamster   pick from a list or type (NamePrompt.mc)
+//   2 of 4  How old are you?    UP/DOWN change, START next
+//   3 of 4  You are...          Female / Male / Other / Prefer not to say
+//   4 of 4  Your weight?        UP/DOWN change (kg), START done
 // BACK skips a question (keeps the default / Garmin profile value) and moves
-// on. The age and gender screens are also opened from Settings, where they
+// on. The age, gender and weight screens are also opened from Settings, where they
 // just return to the menu.
 module Onboarding {
 
@@ -39,7 +40,13 @@ module Onboarding {
         }
     }
 
-    // All three answered (or skipped): back to the hamster.
+    // Step 4.
+    function toWeight() as Void {
+        var view = new WeightView(true, null);
+        WatchUi.switchToView(view, new WeightDelegate(view), WatchUi.SLIDE_LEFT);
+    }
+
+    // All four answered (or skipped): back to the hamster.
     function finish() as Void {
         Prefs.setOnboarded();
         Pet.markFirstDay();
@@ -58,8 +65,15 @@ module Onboarding {
         return a != null ? a.format("%d") : WatchUi.loadResource(Rez.Strings.NotSet) as String;
     }
 
+    function weightLabel() as String {
+        var kg = Hydration.weightKg();
+        return kg != null ? kg.format("%d") + " kg" : WatchUi.loadResource(Rez.Strings.NotSet) as String;
+    }
+
+    const STEPS = 4;
+
     function stepLabel(n as Number) as String {
-        return Lang.format(WatchUi.loadResource(Rez.Strings.StepOf) as String, [n, 3]);
+        return Lang.format(WatchUi.loadResource(Rez.Strings.StepOf) as String, [n, STEPS]);
     }
 }
 
@@ -174,11 +188,98 @@ class GenderDelegate extends WatchUi.Menu2InputDelegate {
 
     private function done() as Void {
         if (_onboarding) {
-            Onboarding.finish();
+            Onboarding.toWeight();
         } else {
             var item = _menuItem;
             if (item != null) {
                 item.setSubLabel(Onboarding.genderLabel(Prefs.gender()));
+            }
+            WatchUi.popView(WatchUi.SLIDE_RIGHT);
+        }
+    }
+}
+
+// Question 4 (and Settings > Weight): body weight in kg, pre-filled from the
+// Garmin profile. Sets the daily goal (33 ml per kg, rounded up to glasses).
+class WeightView extends WatchUi.View {
+
+    var kg as Number;
+    var onboarding as Boolean;
+    var menuItem as WatchUi.MenuItem?;
+
+    function initialize(isOnboarding as Boolean, item as WatchUi.MenuItem?) {
+        View.initialize();
+        onboarding = isOnboarding;
+        menuItem = item;
+        var w = Hydration.weightKg();
+        kg = w != null ? w : Prefs.DEFAULT_WEIGHT_KG;
+    }
+
+    function onUpdate(dc as Dc) as Void {
+        dc.setColor(Scenes.BLACK, Scenes.BLACK);
+        dc.clear();
+        if (onboarding) {
+            Scenes.txt(dc, 130, 30, Graphics.FONT_XTINY, Onboarding.stepLabel(4), Scenes.GREY);
+        }
+        HamsterArt.draw(dc, 130, 66, 0.5, Pet.MOOD_ON_TRACK, HamsterArt.ACC_NONE, HamsterArt.ACC_NONE,
+                        0.5, false, System.getTimer(), HamsterArt.REACT_NONE, 0);
+        Scenes.txt(dc, 130, 118, Graphics.FONT_XTINY,
+                   WatchUi.loadResource(Rez.Strings.WeightQuestion) as String, Scenes.WHITE);
+        dc.setColor(Scenes.WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(2);
+        dc.drawRoundedRectangle(70, 136, 120, 48, 8);
+        dc.setPenWidth(1);
+        Scenes.txt(dc, 130, 160, Graphics.FONT_MEDIUM, kg.format("%d") + " kg", Scenes.WHITE);
+        Scenes.txt(dc, 50, 160, Graphics.FONT_SMALL, "-", Scenes.GREY);
+        Scenes.txt(dc, 210, 160, Graphics.FONT_SMALL, "+", Scenes.GREY);
+        Scenes.txt(dc, 130, 204, Graphics.FONT_XTINY,
+                   WatchUi.loadResource(Rez.Strings.AgeHint) as String, Scenes.GREY);
+        Scenes.txt(dc, 130, 226, Graphics.FONT_XTINY,
+                   WatchUi.loadResource(onboarding ? Rez.Strings.BackSkip : Rez.Strings.BackCancel) as String,
+                   Scenes.GREY);
+    }
+}
+
+class WeightDelegate extends WatchUi.BehaviorDelegate {
+
+    private var _view as WeightView;
+
+    function initialize(view as WeightView) {
+        BehaviorDelegate.initialize();
+        _view = view;
+    }
+
+    function onPreviousPage() as Boolean {   // UP: heavier
+        if (_view.kg < Prefs.MAX_WEIGHT_KG) { _view.kg++; }
+        WatchUi.requestUpdate();
+        return true;
+    }
+
+    function onNextPage() as Boolean {       // DOWN: lighter
+        if (_view.kg > Prefs.MIN_WEIGHT_KG) { _view.kg--; }
+        WatchUi.requestUpdate();
+        return true;
+    }
+
+    function onSelect() as Boolean {
+        Prefs.setWeightKg(_view.kg);
+        Screen.dirty = true;
+        next();
+        return true;
+    }
+
+    function onBack() as Boolean {
+        next();
+        return true;
+    }
+
+    private function next() as Void {
+        if (_view.onboarding) {
+            Onboarding.finish();
+        } else {
+            var item = _view.menuItem;
+            if (item != null) {
+                item.setSubLabel(Onboarding.weightLabel());
             }
             WatchUi.popView(WatchUi.SLIDE_RIGHT);
         }

@@ -169,16 +169,6 @@ module WaterLog {
                                      as Array<Storage.ValueType>);
     }
 
-    // Add a drink to yesterday's total (forgot to log it).
-    function addToYesterday(ml as Number) as Void {
-        var day = daysAgo(1);
-        var h = history();
-        var r = dayRecord(day);
-        h[day] = ((r != null && r.size() >= 2) ? [r[0] + ml, r[1]] : [ml, Hydration.goalMl()])
-            as Array<Storage.ValueType>;
-        Storage.setValue(KEY_HISTORY, h);
-    }
-
     // Days in a row the goal was met. Today counts once it's met; until then
     // the streak is the run ending yesterday.
     function streak() as Number {

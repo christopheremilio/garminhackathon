@@ -47,8 +47,12 @@ module Hydration {
     // Skip an arrival reminder if you drank within this many minutes.
     const ARRIVAL_SKIP_IF_DRANK_MIN = 15;
 
-    // Body weight in kg from the user profile, or null.
+    // Body weight in kg: the user's answer, else the Garmin profile, else null.
     function weightKg() as Number? {
+        var saved = Prefs.savedWeightKg();
+        if (saved != null) {
+            return saved;
+        }
         var w = UserProfile.getProfile().weight;
         if (w == null || w <= 0) {
             return null;
@@ -77,7 +81,9 @@ module Hydration {
         return ml;
     }
 
-    function activityBonusMl() as Number {
+    // Heart rate: Garmin's intensity minutes are measured from your heart
+    // rate (moderate / vigorous effort).
+    function heartRateBonusMl() as Number {
         if (Demo.active) {
             return Demo.bonusMl;
         }
@@ -85,7 +91,13 @@ module Hydration {
         if (am == null) {
             return 0;
         }
-        var ml = am.moderate * ML_PER_MODERATE_MIN + am.vigorous * ML_PER_VIGOROUS_MIN;
+        return am.moderate * ML_PER_MODERATE_MIN + am.vigorous * ML_PER_VIGOROUS_MIN;
+    }
+
+    // Activity = steps + heart rate, capped together so a run isn't counted
+    // twice (it adds steps and intensity minutes).
+    function activityBonusMl() as Number {
+        var ml = Steps.bonusMl() + heartRateBonusMl();
         return ml > MAX_ACTIVITY_BONUS_ML ? MAX_ACTIVITY_BONUS_ML : ml;
     }
 

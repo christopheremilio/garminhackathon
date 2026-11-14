@@ -1,7 +1,7 @@
-# Developing HelloFenix
+# Developing Hydro Habit
 
 Developer notes for the hamster water pet Connect IQ watch app (Garmin fēnix® 7 Pro,
-Monkey C; listed on the watch as **Water Reminder**). For how to *use* the app, see
+Monkey C; app name **Hydro Habit**, the hamster is Coco). For how to *use* the app, see
 [README.md](README.md).
 
 The long-term goal is a Tamagotchi-style habit tracker. Hydration is the first habit, so
@@ -29,15 +29,15 @@ source/
   Prefs.mc                      (:background) hamster name, wake/bed times, waking-day fraction
   WaterLog.mc                   (:background) ml log, undo, history, streak, reminder timing, snooze
   Hydration.mc                  (:background) adaptive goal (weight, activity, heat), exertion, place rules, workout window, pet score
-  Steps.mc                      (:background) habit #2: steps score (gentle, floored at "restless")
+  Steps.mc                      (:background) today's steps and their water bonus
   Reminders.mc                  (:background) "<name> is crying" wording, mood-drop detection
   Places.mc                     (:background) saved places + "where am I" matching
   WaterServiceDelegate.mc       (:background) temporal event -> arrival / mood-drop / interval notification
   Actions.mc                    Log water (picks sip/revive/goal reaction), undo, snooze, reset
   Screen.mc                     Page, "data changed" and "play a reaction" signals
   Menus.mc                      Hold-UP menu + Hamster / Places / Settings submenus, "Back to hamster"
-  Onboarding.mc                 First-launch questions 2-3 (age, gender) + settings editors
-  QuickAdd.mc                   Add water screen: 1/2, 1, 2 glasses, undo last, add to yesterday
+  Onboarding.mc                 First-launch questions 2-4 (age, gender, weight) + settings editors
+  QuickAdd.mc                   Add water screen: 1/2, 1, 2 glasses, undo last
   Rewards.mc                    Goal-day count, 12 accessories (1 per 3 goal days), 9 badges, what's worn
   Closet.mc                     Closet browser: preview all 12 (locked too), wear one hat + one other; swipe/tap
   Units.mc                      (:background) everything shown in glasses (250 ml); half-glass steps
@@ -48,7 +48,7 @@ source/
   DrinkAlert.mc                 Foreground-only bell (single ring) + vibration
   Demo.mc                       Demo switch + fake inputs the rules read while it runs
   DemoTour.mc                   Scripted looping feature walkthrough + title cards
-  Autopilot.mc                  Scripted input replay test (46 steps; make autopilot only)
+  Autopilot.mc                  Scripted input replay test (47 steps; make autopilot only)
   Tests.mc                      Unit tests ((:test), run with make test)
 resources/
   strings/strings.xml           Text (background-used strings are scope="background")
@@ -109,9 +109,9 @@ name are faked (`Demo.mc`), and nothing touches the real streak. Each beat logs
 
 - **Unit tests** (`source/Tests.mc`, 14 tests): `make test` builds with `-t` and runs them
   in the simulator. They cover units, moods and deficit scoring, the log/undo, streaks,
-  add-to-yesterday, rewards and badges, the reminder cap/snooze/countdown, mood-drop
+  rewards and badges, the weight answer, the reminder cap/snooze/countdown, mood-drop
   reminders, age/gender rules, prefs and places. They wipe the simulator app's storage.
-- **Autopilot** (`source/Autopilot.mc`, 46 steps): `make autopilot`. This is a separate
+- **Autopilot** (`source/Autopilot.mc`, 47 steps): `make autopilot`. This is a separate
   build (`autopilot.jungle` keeps the `(:autopilot)` code that `monkey.jungle` excludes), so
   normal builds and `make demo` can never run it. It drives the real input handlers on a timer through first launch, quick
   add/undo, every menu path and "Back to hamster", the closet (swipe, tap, locked items,
@@ -150,16 +150,15 @@ name are faked (`Demo.mc`), and nothing touches the real streak. Each beat logs
 
 Today's total in ml plus a list of today's entries (for **Undo last**). Every change, and
 every background check, writes `history[YYYYMMDD] = [ml, goalMl]`, keeping 35 days. The
-goal is saved alongside because it changes with activity. **Add to yesterday** edits
-yesterday's record. The **streak** counts consecutive met days back from yesterday, plus
+goal is saved alongside because it changes with activity. The **streak** counts consecutive met days back from yesterday, plus
 today once it's met. The day resets at local midnight.
 
 ### Steps, hot days, workouts, walking off
 
-- **Steps** (`Steps.mc`): score = 100 − % behind pace, floored at 50, so steps alone can
-  reach "wants a walk" (the thirsty tier) but never cry or collapse. `Pet.scores()` =
-  [water, steps]; mood = worst; `Pet.worstHabit()` picks the wording. Hydrated needs the
-  water goal met and every habit on track.
+- **Steps** (`Steps.mc`): not a habit. They don't affect mood; they raise the goal by
+  +1 glass per 5,000 steps beyond the first 5,000 (max +3). `Hydration.activityBonusMl()` =
+  steps + heart rate (intensity minutes), capped together at `MAX_ACTIVITY_BONUS_ML`. The
+  home info line shows "N steps today". `Pet.scores()` is water only.
 - **Hot day** (`Hydration.heatBonusMl`): `Weather.getCurrentConditions().feelsLikeTemperature`
   (or temperature): ≥ 25 °C +1 glass, ≥ 30 °C +2, added to the goal.
 - **Post-workout** (`WaterServiceDelegate.onActivityCompleted`, registered via
@@ -183,10 +182,11 @@ so "9 / 9 glasses" always means done. The ml/oz setting was removed.
 
 | Input | Source | Effect |
 | ----- | ------ | ------ |
-| Body weight | `UserProfile` | Base goal = 33 ml/kg, clamped 1.5–3.5 L |
+| Body weight | setup answer (`Prefs.savedWeightKg`), else `UserProfile` | Base goal = 33 ml/kg, clamped 1.5–3.5 L |
 | Gender (asked, or Garmin profile) | `Prefs.gender()` | No weight: 2.5 L male, 2.0 L female, 2.2 L otherwise |
 | Age (asked, or Garmin birth year) | `Prefs.age()` | Under 14: goal capped at 1.7 L. 65+: reminder interval 45 min |
-| Intensity minutes today | `ActivityMonitor.activeMinutesDay` | +10 ml per moderate min, +15 ml per vigorous min, capped at +1.5 L |
+| Steps today | `ActivityMonitor.steps` | +1 glass per 5,000 beyond the first 5,000, max +3 |
+| Intensity minutes (heart rate) | `ActivityMonitor.activeMinutesDay` | +10 ml per moderate min, +15 ml per vigorous min; steps + this capped at +1.5 L |
 | Heart rate, last 30 min | `SensorHistory` + HR zones | ≥50% of samples in zone 3+ = "exerting": remind every 25 min, suggest 500 ml |
 
 ### The hamster's mood (`Pet.mc`, `Hydration.petScore`)
@@ -248,7 +248,7 @@ known fix only if it's under 15 min old.
   furrowed brows, red cheeks, "!!" and ear steam, for 9 s. `DrinkAlert.angry()` rings the
   bell, then a 120 ms buzz on every landing. `vibrate()` takes at most 8 profiles, so it
   covers 4 jumps and `ReminderView` re-triggers it every 2 s while the hamster jumps.
-- **First launch** (`Onboarding`): the name → age → gender screens replace each other
+- **First launch** (`Onboarding`): the name → age → gender → weight screens replace each other
   (`switchToView`), BACK skips, and the last step sets `Prefs.onboarded()` and pops to the
   hamster. Age and gender default to the Garmin profile.
 - **Menus** (`Menus.mc`): submenus `switchToView` over the main menu, so the stack is at most
@@ -265,7 +265,7 @@ known fix only if it's under 15 min old.
 ### Rewards (`Rewards.mc`)
 
 `Rewards.checkDay(day)` is called after every drink (including notification "+250" and
-add-to-yesterday). The first time a day reaches its goal it is counted once (tracked in
+). The first time a day reaches its goal it is counted once (tracked in
 `countedDays`), `goalDays` goes up, badges are re-evaluated (streak 3/7/30/100, total
 10/50/100, first day, and a perfect Mon–Sun week checked on Sundays), and every 3rd goal
 day unlocks the next accessory. A new accessory is auto-worn if its slot is empty, and it
@@ -294,7 +294,7 @@ setup (background registration, place preset) lives in `getInitialView()`.
 Where the design and our existing app overlapped, we chose:
 
 1. The design's 5 moods (deficit-based), **plus Sleeping** overnight.
-2. START adds 250 ml instantly. Other amounts, undo and add-to-yesterday are on the
+2. START adds 250 ml instantly. Other amounts and undo are on the
    quick-add screen (menu → Add water). Litres everywhere.
 3. UP/DOWN switch pages. Undo/reset/places live in the menu and quick-add screen.
 4. ~~The design's water bar~~ → **our segmented ring** around the edge (one segment per
