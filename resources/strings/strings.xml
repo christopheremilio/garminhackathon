@@ -1,14 +1,139 @@
 <strings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://developer.garmin.com/downloads/connect-iq/resources.xsd">
     <string id="AppName">Water Reminder</string>
-    <string id="WaterLabel">Water today</string>
-    <string id="GoalReached">Goal reached!</string>
-    <string id="QuietHours">Reminders paused overnight</string>
     <string id="DrinkNow">Time to drink!</string>
     <string id="NextIn">Next drink in $1$ min</string>
-    <string id="Hint">START +1   DOWN undo</string>
+    <string id="DrinkNowExertion">Drink $1$ now!</string>
+    <string id="Exerting">Working hard!</string>
+    <string id="ActivityBonus">+$1$ for activity</string>
+    <string id="ResetConfirm">Reset today's water?</string>
+    <string id="AtPlace">At $1$</string>
+
+    <string id="MenuTitle">Menu</string>
+    <string id="SaveAs">Save as $1$</string>
+    <string id="Saved">Saved</string>
+    <string id="NotSet">Not set</string>
+    <string id="ForgetPlaces">Forget places</string>
+    <string id="ForgetConfirm">Forget all saved places?</string>
+    <string id="ResetToday">Reset today</string>
+    <string id="PlaceHome">Home</string>
+    <string id="PlaceGym">Gym</string>
+    <string id="PlaceWork">Work</string>
+    <string id="PlaceOther">Other</string>
+    <string id="GettingGps">Getting GPS...</string>
+    <string id="GpsTip">Works best outdoors</string>
+    <string id="PlaceSaved">$1$ saved</string>
+    <string id="GpsQuality">GPS $1$</string>
+    <string id="QualityGood">good</string>
+    <string id="QualityUsable">usable</string>
+    <string id="QualityPoor">poor</string>
+    <string id="SimulatedGps">Simulated GPS</string>
+    <string id="NoFix">No GPS fix</string>
 
     <string id="NotifyTitle" scope="background">Drink water</string>
-    <string id="NotifySubtitle" scope="background">Time for a glass</string>
-    <string id="NotifyBody" scope="background">$1$ of $2$ glasses so far today</string>
-    <string id="NotifyAction" scope="background">+1 glass</string>
+    <string id="NotifyBody" scope="background">$1$ so far today</string>
+    <string id="NotifyBodyExertion" scope="background">You've been working hard. Drink $1$.</string>
+    <string id="NotifyBodyGym" scope="background">At the gym. Drink $1$.</string>
+    <string id="ArriveGymTitle" scope="background">At the gym</string>
+    <string id="ArriveGymBody" scope="background">Drink $1$ before you start.</string>
+    <string id="ArriveHomeTitle" scope="background">Welcome home</string>
+    <string id="ArriveHomeBody" scope="background">Time for a glass of water.</string>
+    <string id="ArriveWorkTitle" scope="background">At work</string>
+    <string id="ArriveWorkBody" scope="background">Start with a glass of water.</string>
+    <string id="ArriveOtherTitle" scope="background">You've arrived</string>
+    <string id="ArriveOtherBody" scope="background">Grab a glass of water.</string>
+
+    <!-- Hamster home / pages -->
+    <string id="TitleCryingHome">$1$ is crying!</string>
+    <string id="TitleAsleep">$1$ is asleep</string>
+    <string id="TitleBack">$1$ is back!</string>
+    <string id="NewStreak">New streak starts</string>
+    <string id="StreakDays">$1$ day streak</string>
+    <string id="GoalMet">Goal met!</string>
+    <string id="GoalReachedTitle">Goal reached!</string>
+    <string id="SleepingUntil">Sleeping until $1$</string>
+
+    <!-- Weekly tracker -->
+    <string id="WeekTitle">This week</string>
+    <string id="WeekDaysMet">$1$ of 7 days</string>
+    <string id="WeekAvg">Avg $1$</string>
+
+    <!-- Quick add -->
+    <string id="AddWaterTitle">Add water</string>
+    <string id="AddWaterSub">Other amounts, undo</string>
+    <string id="AddYesterdayTitle">Add to yesterday</string>
+    <string id="UndoLast">Undo last</string>
+    <string id="AddToYesterday">Add to yesterday</string>
+    <string id="AddToToday">Add to today</string>
+
+    <!-- Name -->
+    <string id="NameYourHamster">Name your hamster</string>
+    <string id="NamePressStart">Press START</string>
+    <string id="NameSkip">BACK: skip ($1$)</string>
+    <string id="RenameHamster">Rename hamster</string>
+
+    <!-- Waking window -->
+    <string id="WakeTime">Wake time</string>
+    <string id="BedTime">Bed time</string>
+
+    <!-- Reminders (also used by the background service) -->
+    <string id="TitleThirsty" scope="background">$1$ is thirsty</string>
+    <string id="TitleCrying" scope="background">$1$ is crying</string>
+    <string id="TitleCollapsed" scope="background">$1$ collapsed</string>
+    <string id="TitleWantsDrink" scope="background">$1$ wants a drink</string>
+    <string id="DrinkNowShort" scope="background">Drink now</string>
+    <string id="DrinkToRevive" scope="background">Drink to revive</string>
+    <string id="Snooze" scope="background">Snooze</string>
+
+    <!-- Closet / badges / units -->
+    <string id="ClosetTitle">Closet</string>
+    <string id="ClosetHint">START or tap: browse all</string>
+    <string id="ItemOf">$1$ of $2$</string>
+    <string id="UnlockedOf">$1$ of $2$ unlocked</string>
+    <string id="Locked">Locked</string>
+    <string id="UnlocksAt">Unlocks at $1$ goal days</string>
+    <string id="WearingItem">$1$ (on)</string>
+    <string id="NewItem">New: $1$</string>
+    <string id="BadgesTitle">Badges</string>
+    <string id="BadgesEarned">$1$ of $2$ earned</string>
+    <string id="UnitsItem">Units</string>
+    <string id="AccNone">Nothing</string>
+    <string id="AccPartyHat">Party hat</string>
+    <string id="AccBow">Bow</string>
+    <string id="AccGlasses">Round glasses</string>
+    <string id="AccScarf">Scarf</string>
+    <string id="AccCrown">Crown</string>
+    <string id="AccFlower">Flower</string>
+    <string id="AccSunglasses">Sunglasses</string>
+    <string id="AccSweatband">Sweatband</string>
+    <string id="AccBowTie">Bow tie</string>
+    <string id="AccCap">Cap</string>
+    <string id="AccPlant">Plant</string>
+    <string id="AccMedal">Medal</string>
+
+    <!-- Menu structure -->
+    <string id="MenuHamster">Hamster</string>
+    <string id="MenuPlaces">Places</string>
+    <string id="MenuSettings">Settings</string>
+    <string id="BackToHamster">Back to hamster</string>
+    <string id="DressUp">Dress up</string>
+    <string id="PlacesSavedCount">$1$ of $2$ saved</string>
+
+    <!-- First-launch questions -->
+    <string id="StepOf">$1$ of $2$</string>
+    <string id="AgeQuestion">How old are you?</string>
+    <string id="AgeHint">UP/DOWN change, START ok</string>
+    <string id="AgeItem">Age</string>
+    <string id="GenderItem">Gender</string>
+    <string id="GenderQuestionStep">3 of 3: You are</string>
+    <string id="GenderFemale">Female</string>
+    <string id="GenderMale">Male</string>
+    <string id="GenderOther">Other</string>
+    <string id="GenderUnsaid">Prefer not to say</string>
+    <string id="BackSkip">BACK: skip</string>
+    <string id="BackCancel">BACK: cancel</string>
+
+    <!-- Closet browsing -->
+    <string id="GoalDaysToGo">$1$ goal days to go</string>
+    <string id="Wearing">Wearing</string>
+    <string id="TapToWear">START: wear</string>
 </strings>

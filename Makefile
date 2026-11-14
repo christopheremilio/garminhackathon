@@ -12,7 +12,7 @@ BUILD  := bin
 MONKEYC  := "$(SDK)/bin/monkeyc"
 MONKEYDO := "$(SDK)/bin/monkeydo"
 
-.PHONY: all build run sim clean
+.PHONY: all build run sim test clean
 
 all: build
 
@@ -25,6 +25,13 @@ build:
 # Build, then load the app into a running simulator.
 run: build
 	$(MONKEYDO) $(BUILD)/$(APP).prg $(DEVICE)
+
+# Unit tests (source/Tests.mc): build with -t and run in the simulator.
+# Results print here. Running them wipes the simulator app's storage.
+test:
+	@mkdir -p $(BUILD)
+	$(MONKEYC) -f monkey.jungle -w -l 3 -t -o $(BUILD)/$(APP)-test.prg -d $(DEVICE) -y "$(KEY)"
+	$(MONKEYDO) $(BUILD)/$(APP)-test.prg $(DEVICE) -t
 
 # Launch the Connect IQ simulator (leave it running for `make run`).
 sim:
